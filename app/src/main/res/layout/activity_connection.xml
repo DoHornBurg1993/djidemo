@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/timg">
+
+    <TextView
+        android:id="@+id/text_connection_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="状态: 没有产品连接"
+        android:textColor="@android:color/black"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:layout_alignBottom="@+id/text_product_info"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="89dp" />
+
+    <TextView
+        android:id="@+id/text_product_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="200dp"
+        android:text="@string/product_information"
+        android:textColor="@android:color/black"
+        android:textSize="20dp"
+        android:gravity="center"
+        android:textStyle="bold"
+        />
+
+    <Button
+        android:id="@+id/btn_open"
+        android:layout_width="150dp"
+        android:layout_height="55dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="400dp"
+        android:background="@drawable/round_btn"
+        android:text="打开无人机画面"
+        android:textColor="@color/colorWhite"
+        android:textSize="20dp"
+        />
+    <EditText
+        android:id="@+id/edit_url_input"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="260dp"
+        android:layout_centerHorizontal="true"
+        android:inputType="textUri" />
+    <Button
+        android:id="@+id/btn_address"
+        android:layout_width="150dp"
+        android:layout_height="55dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="320dp"
+        android:background="@drawable/round_btn"
+        android:text="确认输入"
+        android:textColor="@color/colorWhite"
+        android:textSize="20dp"
+        />
+    <Button
+        android:id="@+id/btn_waypoint"
+        android:layout_width="150dp"
+        android:layout_height="55dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="480dp"
+        android:background="@drawable/round_btn"
+        android:text="打开WAYPOINT"
+        android:textColor="@color/colorWhite"
+        android:textSize="20dp"
+        />
+<!--    <Button-->
+<!--        android:id="@+id/btn_waypoint"-->
+<!--        android:layout_width="150dp"-->
+<!--        android:layout_height="55dp"-->
+<!--        android:layout_centerHorizontal="true"-->
+<!--        android:layout_marginTop="220dp"-->
+<!--        android:background="@drawable/round_btn"-->
+<!--        android:text="waypoint open"-->
+<!--        android:textColor="@color/colorWhite"-->
+<!--        android:textSize="20dp"-->
+<!--        />-->
+<!--    <Button-->
+<!--        android:id="@+id/btn_uxsdk"-->
+<!--        android:layout_width="150dp"-->
+<!--        android:layout_height="55dp"-->
+<!--        android:layout_centerHorizontal="true"-->
+<!--        android:layout_marginTop="280dp"-->
+<!--        android:background="@drawable/round_btn"-->
+<!--        android:text="uxsdk Open"-->
+<!--        android:textColor="@color/colorWhite"-->
+<!--        android:textSize="20dp"-->
+<!--        />-->
+
+<!--    <Button-->
+<!--        android:id="@+id/btn_login"-->
+<!--        android:layout_width="150dp"-->
+<!--        android:layout_height="55dp"-->
+<!--        android:layout_centerHorizontal="true"-->
+<!--        android:layout_marginTop="340dp"-->
+<!--        android:background="@drawable/round_btn"-->
+<!--        android:text="登录DJI"-->
+<!--        android:textColor="@color/colorWhite"-->
+<!--        android:textSize="20dp"-->
+<!--        />-->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="550dp"
+        android:text="@string/sdk_version"
+        android:textSize="15dp"
+        android:id="@+id/textView2" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="大疆AST开发"
+        android:id="@+id/textView"
+        android:layout_marginTop="58dp"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:textColor="@color/colorBlack"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>
