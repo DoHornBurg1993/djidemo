@@ -84,8 +84,7 @@ public class FPVDemoApplication extends Application {
         super.onCreate();
 
         mHandler = new Handler(Looper.getMainLooper());
-
-//        启动SDK服务时，接口DJISDKManager的一个实例。DJISDKManagerCallback将用于监听SDK注册结果和产品更改。
+        //        启动SDK服务时，接口DJISDKManager的一个实例。DJISDKManagerCallback将用于监听SDK注册结果和产品更改。
         mDJISDKManagerCallback = new DJISDKManager.SDKManagerCallback() {
 
             //Listens to the SDK registration result
