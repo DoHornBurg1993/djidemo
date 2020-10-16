@@ -199,14 +199,14 @@
             android:layout_weight="1"
             android:text="后退至首页"
             android:textSize="12sp" />
-        <Button
-            android:id="@+id/btn_live"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:text="直播推流"
-            android:textSize="12sp" />
+<!--        <Button-->
+<!--            android:id="@+id/btn_end"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center_vertical"-->
+<!--            android:layout_weight="1"-->
+<!--            android:text="任务结束"-->
+<!--            android:textSize="12sp" />-->
 
 <!--        <Button-->
 <!--            android:id="@+id/btn_capture"-->

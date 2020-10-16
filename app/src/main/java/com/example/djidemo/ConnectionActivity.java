@@ -3,10 +3,14 @@ package com.example.djidemo;
 import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -51,7 +55,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
     private TextView mTextProduct;
     private TextView mVersionTv;
     private Button mBtnOpen;
-    private Button mBtnWayPoint;
+//    private Button mBtnWayPoint;
     private static final String[] REQUIRED_PERMISSION_LIST = new String[]{
             Manifest.permission.VIBRATE,
             Manifest.permission.INTERNET,
@@ -73,12 +77,15 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
     private List<String> missingPermission = new ArrayList<>();
     private AtomicBoolean isRegistrationInProgress = new AtomicBoolean(false);
     private static final int REQUEST_PERMISSION_CODE = 12345;
-    private EditText urlInputEdit;
-    private String showUrl = "请先输入您的url";
+    private EditText urlInputEdit,portInputEdit,urlParaInputEdit,portParaInputEdit,uavNoInputEdit;
+    private String showUrl,showPort,showUrlPara,showPortPara,uavNo;
     private Button mAddressBtn;
-    private String url_address;
-//    private String regex = "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}";
-//    private boolean isSetAddress;
+    private String showUrl_,showPort_,showUrlPara_,showPortPara_,uavNo_;
+    private SQLiteDatabase db;
+
+    //保留上次输入
+//    private SharedPreferences mContextSp;
+//    private SharedPreferences mActivitySp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,12 +93,41 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         checkAndRequestPermissions();
         setContentView(R.layout.activity_connection);
 
+
+        //依靠DatabaseHelper的构造函数创建数据库
+        DatabaseHelper dbHelper = new DatabaseHelper(ConnectionActivity.this, "dji_db", null, 1);
+
+        db = dbHelper.getWritableDatabase();
+
+        String sql = "create table IF NOT EXISTS db_uav(urlInput varchar(20),portInput varchar(20),urlParaInput varchar(20),portParaInput varchar(20),uavNoInput varchar(20))";
+//        String sql = "drop table db_uav";
+        db.execSQL(sql);
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Cursor cursor =db.rawQuery("select urlInput,portInput,urlParaInput,portParaInput,uavNoInput from db_uav",null);
+                while (cursor.moveToNext()) {
+                   showUrl =  cursor.getString(0);
+                    showPort=cursor.getString(1);
+                    showUrlPara = cursor.getString(2);
+                    showPortPara = cursor.getString(3);
+                    uavNo = cursor.getString(4);
+                }
+                cursor.close(); // 关闭游标，释放资源
+            }
+        });
+
+        thread.start();
+
         initUI();
 
         // Register the broadcast receiver for receiving the device connection's changes.
         IntentFilter filter = new IntentFilter();
         filter.addAction(FPVDemoApplication.FLAG_CONNECTION_CHANGE);
         registerReceiver(mReceiver, filter);
+
+
     }
 
 //    检查是否缺少权限，并在需要时请求运行时权限。
@@ -245,12 +281,29 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         urlInputEdit = (EditText) findViewById(R.id.edit_url_input);
         urlInputEdit.setText(showUrl);
         urlInputEdit.setOnClickListener(this);
+
+        portInputEdit = (EditText) findViewById(R.id.edit_url_inputPort);
+        portInputEdit.setText(showPort);
+        portInputEdit.setOnClickListener(this);
+
+        urlParaInputEdit = (EditText) findViewById(R.id.edit_url_input1);
+        urlParaInputEdit.setText(showUrlPara);
+        urlParaInputEdit.setOnClickListener(this);
+
+        portParaInputEdit = (EditText) findViewById(R.id.edit_url_inputPort1);
+        portParaInputEdit.setText(showPortPara);
+        portParaInputEdit.setOnClickListener(this);
+
+        uavNoInputEdit = (EditText) findViewById(R.id.edit_uavNo);
+        uavNoInputEdit.setText(uavNo);
+        uavNoInputEdit.setOnClickListener(this);
+
         mAddressBtn=(Button) findViewById(R.id.btn_address);
         mAddressBtn.setOnClickListener(this);
         mAddressBtn.setEnabled(false);
-        mBtnWayPoint=(Button)findViewById(R.id.btn_waypoint);
-        mBtnWayPoint.setOnClickListener(this);
-        mBtnWayPoint.setEnabled(false);
+//        mBtnWayPoint=(Button)findViewById(R.id.btn_waypoint);
+//        mBtnWayPoint.setOnClickListener(this);
+//        mBtnWayPoint.setEnabled(false);
     }
 
     protected BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -292,32 +345,40 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-
             case R.id.btn_open: {
                 Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra("address",url_address);
+                intent.putExtra("showUrl_",showUrl_);
+                intent.putExtra("showPort_",showPort_);
+                intent.putExtra("showUrlPara_",showUrlPara_);
+                intent.putExtra("showPortPara_",showPortPara_);
+                intent.putExtra("uavNo_",uavNo_);
                 startActivity(intent);
                 break;
             }
             case R.id.btn_address: {
-                url_address = urlInputEdit.getText().toString();
-                showToast("您的url地址为:"+url_address);
+                String sqlDelete = "delete from db_uav";
+                db.execSQL(sqlDelete);
+                showUrl_ = urlInputEdit.getText().toString();
+                showPort_=portInputEdit.getText().toString();
+                showUrlPara_=urlParaInputEdit.getText().toString();
+                showPortPara_=portParaInputEdit.getText().toString();
+                uavNo_=uavNoInputEdit.getText().toString();
 
-                if(!StringUtil.isBlank(url_address)) {
+                String sqlInsert1 = "insert into db_uav (urlInput,portInput,urlParaInput,portParaInput,uavNoInput) values ('"+showUrl_+"','"+showPort_+"','"+showUrlPara_+"','"+showPortPara_+"','"+uavNo_+"')";
+                db.execSQL(sqlInsert1);
+
+                showToast("你已经完成输入");
+
                     mBtnOpen.setEnabled(true);
-                    mBtnWayPoint.setEnabled(true);
-                }
-                else{
-                    showToast("url地址不能为空!");
-                    mBtnOpen.setEnabled(false);
-                }
+
+
                 break;
             }
-            case R.id.btn_waypoint: {
-                Intent intent = new Intent(this, CompleteWidgetActivity1.class);
-                startActivity(intent);
-                break;
-            }
+//            case R.id.btn_waypoint: {
+//                Intent intent = new Intent(this, CompleteWidgetActivity1.class);
+//                startActivity(intent);
+//                break;
+//            }
             default:
                 break;
         }

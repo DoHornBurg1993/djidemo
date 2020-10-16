@@ -17,14 +17,14 @@
         android:textStyle="bold"
         android:layout_alignBottom="@+id/text_product_info"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="89dp" />
+        android:layout_marginBottom="50dp" />
 
     <TextView
         android:id="@+id/text_product_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="150dp"
         android:text="@string/product_information"
         android:textColor="@android:color/black"
         android:textSize="20dp"
@@ -37,7 +37,7 @@
         android:layout_width="150dp"
         android:layout_height="55dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="400dp"
+        android:layout_marginTop="480dp"
         android:background="@drawable/round_btn"
         android:text="打开无人机画面"
         android:textColor="@color/colorWhite"
@@ -45,9 +45,9 @@
         />
     <EditText
         android:id="@+id/edit_url_input"
-        android:layout_width="180dp"
+        android:layout_width="160dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="260dp"
+        android:layout_marginTop="190dp"
         android:layout_centerHorizontal="true"
         android:inputType="textUri" />
     <Button
@@ -55,20 +55,9 @@
         android:layout_width="150dp"
         android:layout_height="55dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="320dp"
+        android:layout_marginTop="400dp"
         android:background="@drawable/round_btn"
         android:text="确认输入"
-        android:textColor="@color/colorWhite"
-        android:textSize="20dp"
-        />
-    <Button
-        android:id="@+id/btn_waypoint"
-        android:layout_width="150dp"
-        android:layout_height="55dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="480dp"
-        android:background="@drawable/round_btn"
-        android:text="打开WAYPOINT"
         android:textColor="@color/colorWhite"
         android:textSize="20dp"
         />
@@ -77,35 +66,13 @@
 <!--        android:layout_width="150dp"-->
 <!--        android:layout_height="55dp"-->
 <!--        android:layout_centerHorizontal="true"-->
-<!--        android:layout_marginTop="220dp"-->
+<!--        android:layout_marginTop="480dp"-->
 <!--        android:background="@drawable/round_btn"-->
-<!--        android:text="waypoint open"-->
-<!--        android:textColor="@color/colorWhite"-->
-<!--        android:textSize="20dp"-->
-<!--        />-->
-<!--    <Button-->
-<!--        android:id="@+id/btn_uxsdk"-->
-<!--        android:layout_width="150dp"-->
-<!--        android:layout_height="55dp"-->
-<!--        android:layout_centerHorizontal="true"-->
-<!--        android:layout_marginTop="280dp"-->
-<!--        android:background="@drawable/round_btn"-->
-<!--        android:text="uxsdk Open"-->
+<!--        android:text="打开WAYPOINT"-->
 <!--        android:textColor="@color/colorWhite"-->
 <!--        android:textSize="20dp"-->
 <!--        />-->
 
-<!--    <Button-->
-<!--        android:id="@+id/btn_login"-->
-<!--        android:layout_width="150dp"-->
-<!--        android:layout_height="55dp"-->
-<!--        android:layout_centerHorizontal="true"-->
-<!--        android:layout_marginTop="340dp"-->
-<!--        android:background="@drawable/round_btn"-->
-<!--        android:text="登录DJI"-->
-<!--        android:textColor="@color/colorWhite"-->
-<!--        android:textSize="20dp"-->
-<!--        />-->
 
     <TextView
         android:layout_width="wrap_content"
@@ -129,4 +96,78 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="200dp"
+        android:layout_marginLeft="50dp"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:text="直播流" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="200dp"
+        android:layout_marginLeft="300dp"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:text=":" />
+    <EditText
+        android:id="@+id/edit_url_inputPort"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="190dp"
+        android:layout_marginLeft="320dp"
+        android:inputType="textUri" />
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="260dp"
+        android:layout_marginLeft="40dp"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:text="飞行数据" />
+    <EditText
+        android:id="@+id/edit_url_input1"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="250dp"
+        android:layout_centerHorizontal="true"
+        android:inputType="textUri" />
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="260dp"
+        android:layout_marginLeft="300dp"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:text=":" />
+    <EditText
+        android:id="@+id/edit_url_inputPort1"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="250dp"
+        android:layout_marginLeft="320dp"
+        android:inputType="textUri" />
+    <EditText
+        android:id="@+id/edit_uavNo"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="310dp"
+        android:layout_centerHorizontal="true"
+        android:inputType="textShortMessage" />
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="320dp"
+        android:layout_marginLeft="40dp"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:text="无人机编号" />
 </RelativeLayout>

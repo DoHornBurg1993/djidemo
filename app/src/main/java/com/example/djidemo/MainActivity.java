@@ -89,7 +89,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
     //sn
 
     protected TextureView mVideoSurface = null;
-    private Button returnBtn, liveBtn;
+    private Button returnBtn, endBtn;
     private TextView recordingTime;
     private TextView distanc;
     private TextView compas;
@@ -128,22 +128,21 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
     private String navStatus, motStatus, comStatus;
     private LiveStreamManager liveStreamManager;
     private String originAddress;
-    private BaseRequest baseRequest=null;
-    private Uav uav=null;
+    private BaseRequest baseRequest = null;
+    private Uav uav = null;
 
-    //socket
+
     private Socket mSocket = null;
     private BufferedReader mBufferedReaderClient = null;
     private PrintWriter mPrintWriterClient = null;
-    private String Information;
+    private String showUrl_, showPort_, showUrlPara_, showPortPara_, uavNo_;
+    private String showUrl, showUrlPara, uavNo;
+    private int showPort, showPortPara;
     private String strInputstream;
-    private String key=null;
+    private String key = null;
     private Thread thread1;
-    private JSONObject jsonObject=null;
-    //socket
+    private JSONObject jsonObject = null;
 
-
-    //Socket
     Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -170,31 +169,18 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
     //Socket
 
 
-//    Handler mHandler = new Handler() {
-//        @Override
-//        public void handleMessage(Message msg) {
-//            super.handleMessage(msg);
-//            String result = "";
-//
-//            if ("OK".equals(msg.obj.toString())) {
-//                result = "发送成功!";
-//            } else if ("Wrong".equals(msg.obj.toString())) {
-//                result = "发送失败!";
-//            } else {
-//                result = msg.obj.toString();
-//            }
-////            Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
-//        }
-//    };
-
     public MainActivity() {
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Intent intent = getIntent();
-        String address = intent.getStringExtra("address");
-        originAddress = "http://" + address + ":8333/point/getTest";
+        showUrl_ = intent.getStringExtra("showUrl_");
+        showPort_ = intent.getStringExtra("showPort_");
+        showUrlPara_ = intent.getStringExtra("showUrlPara_");
+        showPortPara_ = intent.getStringExtra("showPortPara_");
+        uavNo_ = intent.getStringExtra("uavNo_");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -214,7 +200,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
                 .penaltyLog()
                 .penaltyDeath()
                 .build());
-        //Socket
+
 
         // 为摄像头实时查看回调接收原始的H264视频数据
         mReceivedVideoDataListener = new VideoFeeder.VideoDataListener() {
@@ -267,55 +253,28 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
 //        }
         mHandler.postDelayed(runnable, 1000);
 
-        //socket
+        //开始任务
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-//                    mSocket = new Socket("192.168.31.7", 11000);
-                    mSocket = new Socket("211.149.129.108", 11000);
-                    baseRequest= new BaseRequest();
+
+                    showPortPara = Integer.parseInt(showPortPara_);
+                    Log.e(TAG, "showUrlPara_" + showUrlPara_);
+                    Log.e(TAG, "showPortPara" + showPortPara);
+//                 mSocket = new Socket("211.149.129.108", 11000);
+                    mSocket = new Socket(showUrlPara_, showPortPara);
+                    baseRequest = new BaseRequest();
                     baseRequest.setAction("START");
-                    baseRequest.setUav_no("u004");
+                    baseRequest.setUav_no(uavNo_);
                     Gson gson = new Gson();
-                    String JsonBR = gson.toJson(baseRequest)+"SWOOLEFN";
-//                    String str = "{\n" +
-//                            "  \"action\": \"START\",\n" +
-//                            "  \"uav_no\": \"u001\"\n" +
-//                            "  \"time\": \"2020-09-23 22:02:00\",\n" +
-//                            "\"airline_no\": \" AR_20200713142514\",\n" +
-//                            "  \"lon\": 150.7840271,\n" +
-//                            "  \"lat\": 108.4068375,\n" +
-//                            "    \"alt\": 1154383.872,\n" +
-//                            "  \"waypoints\": [{\n" +
-//                            "	\"id\": \" 1\",\n" +
-//                            "   \"lon\": 150.7840271,\n" +
-//                            "   \"lat\": 108.4068375,\n" +
-//                            "     \"alt\": 115.4383872,\n" +
-//                            "\"ground_alt\":100\n" +
-//                            "},{\n" +
-//                            "\"id\": \" 2\", \n" +
-//                            "   \"lon\": 150.7840271,\n" +
-//                            "   \"lat\": 108.4068375,\n" +
-//                            "     \"alt\": 115.4383872,\n" +
-//                            "\"ground_alt\":100\n" +
-//                            "}]\n" +
-//                            "}SWOOLEFN ";
-
+                    String JsonBR = gson.toJson(baseRequest) + "SWOOLEFN";
                     OutputStream out = mSocket.getOutputStream();
-
                     out.write(JsonBR.getBytes());
-
-//                    thread1.start();
                     Log.e(TAG, "zzzz");
                     InputStream inputStream = mSocket.getInputStream();
-
                     ByteArrayOutputStream os = new ByteArrayOutputStream();
                     byte[] buffer = new byte[1024];
-
-//                    os.write(buffer);
-
-
                     int len = inputStream.read(buffer);
                     os.write(buffer);
 
@@ -325,104 +284,31 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
 
                     mSocket.close();
 
-//                    StringBuffer outx = new StringBuffer();
-//                    byte[] b = new byte[4096];
-//                    for (int n; (n = inputStream.read(b)) != -1;) {
-//                        outx.append(new String(b, 0, n));
-//                    }
-//                    out.toString();
-//                    Log.e(TAG, "xxxx"+ out.toString());
-
-
-//                    BufferedReader br=new BufferedReader(new InputStreamReader(inputStream));
-//                    Log.e(TAG, "qqq:"+br.readLine());
-
 
                 } catch (Exception e) {
                 }
 //                }
-
             }
         });
         thread.start();
-//        thread1 = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    Thread.sleep(5000);
-//
-//                    mSocket = new Socket("192.168.31.7", 11000);
-//                    InputStream inputStream=mSocket.getInputStream();
-//
-//                    ByteArrayOutputStream os=new ByteArrayOutputStream();
-//
-//
-//
-//                    byte[] buffer=new byte[1024];
-//
-////                    os.write(buffer);
-//                    Log.e(TAG, "rrr11"+inputStream.available() );
-//
-//                    int len = inputStream.read(buffer);
-//
-//
-//                    while(len!=-1){
-//
-//                        os.write(buffer);
-//                    }
-//
-//                    JSONObject jsonObject=new JSONObject(os.toString());
-//
-//                    Log.e(TAG, "jjj"+jsonObject);
-//
-//                    mSocket.close();
-//                }catch (Exception e){
-//
-//                }
-
-//            }
-//        });
-//        thread1.start();
+        thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                showPort = Integer.parseInt(showPort_);
+                liveStreamManager = DJISDKManager.getInstance().getLiveStreamManager();
+                liveStreamManager.setLiveUrl("rtmp://" + showUrl_ + ":" + showPort + "/uav/" + uavNo_);
+                Log.e(TAG, "liveStreamManager" + "rtmp://" + showUrl_ + ":" + showPort + "/uav/" + uavNo_);
+//                liveStreamManager.setLiveUrl("rtmp://211.149.129.108:10002/uav/u004");
+                liveStreamManager.startStream();
+            }
+        });
+        thread1.start();
 
 
         //socket
 
+
     }
-
-    //socket 发送消息
-//    private void Send() {
-//        try {
-//            // 发送数据给服务端
-//            OutputStream outputStream = socket.getOutputStream();
-//            outputStream.write("abc".getBytes("gb2312"));
-//            // socket.shutdownOutput();
-//            // 等待服务器发送数据，读取数据（超时异常）
-//            DataInputStream br = new DataInputStream(socket.getInputStream());
-//            byte[] b = new byte[1024];
-//            int length = br.read(b);
-//            String Msg = new String(b, 0, length, "gb2312");
-//            System.out.println(Msg + "    接收到服务器的数据");
-//        } catch (UnknownHostException e) {
-//            System.out.println("UnknownHost  来自服务器的数据");
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            System.out.println("IOException   来自服务器的数据");
-//            e.printStackTrace();
-//        }
-//    }
-
-    //socket
-
-    //Socket
-//    private String getInfoBuff(char[] buff, int count) {
-//        char[] temp = new char[count];
-//        for (int i = 0; i < count; i++) {
-//            temp[i] = buff[i];
-//        }
-//        return new String(temp);
-//    }
-    //Socket
-
 
     protected void onProductChange() {
         initPreviewer();
@@ -481,17 +367,11 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
     @Override
     protected void onDestroy() {
 
-        //socket
         try {
             mSocket.shutdownOutput();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
-        //socket
-
 
         Log.e(TAG, "销毁");
         uninitPreviewer();
@@ -507,7 +387,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
         speed = (TextView) findViewById(R.id.speed);
         height = (TextView) findViewById(R.id.height);
         battery = (TextView) findViewById(R.id.battery);
-
         longitude = (TextView) findViewById(R.id.longitude);
         latitude = (TextView) findViewById(R.id.latitude);
         pitch = (TextView) findViewById(R.id.pitch);
@@ -521,7 +400,8 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
         com_status = (TextView) findViewById(R.id.com_status);
         time = (TextView) findViewById(R.id.time);
         returnBtn = (Button) findViewById(R.id.btn_return);
-        liveBtn = (Button) findViewById(R.id.btn_live);
+//        endBtn = (Button) findViewById(R.id.btn_end);
+//        liveBtn = (Button) findViewById(R.id.btn_live);
 
 
         if (null != mVideoSurface) {
@@ -529,13 +409,11 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
         }
 
         returnBtn.setOnClickListener(this);
-        liveBtn.setOnClickListener(this);
+//        endBtn.setOnClickListener(this);
         recordingTime.setVisibility(View.INVISIBLE);
 
     }
-//    private void getDjiId(){
-//        BaseProduct mProduct = FPVDemoApplication.getProductInstance();
-//    }
+
     private void initPreviewer() {
 
         BaseProduct product = FPVDemoApplication.getProductInstance();
@@ -556,11 +434,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
 
             liveStreamManager = DJISDKManager.getInstance().getLiveStreamManager();
             //sn
-
-
-
-
-
         }
         //云台的角度
         if (mGimbal != null) {
@@ -686,10 +559,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
             });
         }
 
-        //sn
-//        if(mRemoteController!=null){
-//            mRemoteController.getIndex();
-//        }
     }
 
     private void uninitPreviewer() {
@@ -741,23 +610,23 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
         public void run() {
 
 
-
             //Socket
             try {
-//                mSocket = new Socket("192.168.31.7", 11000);
-                mSocket = new Socket("211.149.129.108", 11000);
-                key=jsonObject.getString("key");
-                Log.e(TAG, "keykey "+key);
+                showPortPara = Integer.parseInt(showPortPara_);
+//                Log.e(TAG, "showUrlPara" + showUrlPara);
+//                Log.e(TAG, "showPortPara" + showPortPara);
+//                mSocket = new Socket("211.149.129.108", 11000);
+                mSocket = new Socket(showUrlPara_, showPortPara);
+                key = jsonObject.getString("key");
+                Log.e(TAG, "keykey " + key);
                 OutputStream out = mSocket.getOutputStream();
-
-
-                uav=new Uav();
+                uav = new Uav();
                 //飞行命令
                 uav.setAction("UAVDATA");
                 //key
                 uav.setKey(key);
                 //飞机编号
-                uav.setUav_no("u004");
+                uav.setUav_no(uavNo_);
                 //飞行状态
                 uav.setFly_status(1);
                 //时间
@@ -774,11 +643,14 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
                 //航向角
                 uav.setCourse(compass_float);
                 //俯仰角
-                uav.setPitch(altPitch);
+                uav.setPitch(Double.parseDouble(String.valueOf(gimbalPitch)));
+//                uav.setPitch(altPitch);
                 //翻滚角
-                uav.setRoll(altRoll);
+                uav.setRoll(Double.parseDouble(String.valueOf(gimbalRoll)));
+//                uav.setRoll(altRoll);
                 //偏航角
-                uav.setYaw(altYaw);
+                uav.setYaw(Double.parseDouble(String.valueOf(gimbalYaw)));
+//                uav.setYaw(altYaw);
                 //真空速
 //                uav.setTrue_airspeed();
                 //地速
@@ -788,23 +660,23 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
                 //剩余航程
 //                uav.setRemaining_dis();
                 //剩余时间
-                uav.setRemaining_time(Double.valueOf(remainingTime/60));
+                uav.setRemaining_time(Double.valueOf(remainingTime / 60));
                 //动力系统状态
-                if("正常"==motStatus){
+                if ("正常" == motStatus) {
                     uav.setMot_status(0);
-                }else{
+                } else {
                     uav.setMot_status(1);
                 }
                 //导航系统状态
-                if("正常"==navStatus){
+                if ("正常" == navStatus) {
                     uav.setNav_status(0);
-                }else{
+                } else {
                     uav.setNav_status(1);
                 }
                 //通信系统状态
-                if("正常"==comStatus){
+                if ("正常" == comStatus) {
                     uav.setCom_status(0);
-                }else{
+                } else {
                     uav.setCom_status(1);
                 }
                 //温度
@@ -816,34 +688,11 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
                 //距离
 //                uav.setDistance(distance);
                 Gson gson = new Gson();
-                String JsonUav = gson.toJson(uav)+"SWOOLEFN";
-                //                                String str = "{\n" +
-//                        "\"action\":\"UAVDATA\",\n" +
-//                        "\"key\":\""+key+"\",\n" +
-//                        "\"uav_no\":\"u001\",\n" +
-//                        "\"fly_status\":1,\n" +
-//                        "\"time\":\"2019-7-1 17:00:00\",\n" +
-//                        "\"lon\":150.7840271,\n" +
-//                        "\"lat\":108.4068375,\n" +
-//                        "\"alt\":1154383.872,\n" +
-//                        "\"ground_alt\":0.0,\n" +
-//                        "\"course\":0.0,\n" +
-//                        "\"pitch\":1.5,\n" +
-//                        "\"roll\":1.5,\n" +
-//                        "\"true_airspeed\":0.0,\n" +
-//                        "\"ground_speed\":0.0,\n" +
-//                        "\"remaining_oil\":80.0,\n" +
-//                        "\"remaining_dis\":500.0,\n" +
-//                        "\"remaining_time\":80.0,\n" +
-//                        "\"mot_status\":0,\n" +
-//                        "\"nav_status\":0,\n" +
-//                        "\"temperature\":12.3,\n" +
-//                        "\"humidity\":12.3,\n" +
-//                        "\"wind_speed\":0.0\n" +
-//                        "}SWOOLEFN";
+                String JsonUav = gson.toJson(uav) + "SWOOLEFN";
+
                 Log.e(TAG, "kkkkkkkk");
                 out.write(JsonUav.getBytes());
-                uav=null;//gc
+                uav = null;//gc
 
                 mSocket.close();
 
@@ -862,7 +711,37 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
 
         switch (v.getId()) {
             case R.id.btn_return: {
-                   finish();
+                try {
+                    showPortPara = Integer.parseInt(showPortPara_);
+//                Log.e(TAG, "showUrlPara" + showUrlPara);
+//                Log.e(TAG, "showPortPara" + showPortPara);
+//                mSocket = new Socket("211.149.129.108", 11000);
+                    mSocket = new Socket(showUrlPara_, showPortPara);
+                    baseRequest = new BaseRequest();
+                    baseRequest.setAction("END");
+                    baseRequest.setUav_no(uavNo_);
+                    Gson gson = new Gson();
+                    String JsonBR = gson.toJson(baseRequest) + "SWOOLEFN";
+                    OutputStream out = mSocket.getOutputStream();
+                    Log.e(TAG, "End");
+                    out.write(JsonBR.getBytes());
+                    InputStream inputStream = mSocket.getInputStream();
+                    ByteArrayOutputStream os = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int len = inputStream.read(buffer);
+                    os.write(buffer);
+
+                    jsonObject = new JSONObject(os.toString());
+                    Integer status = jsonObject.getInt("status");
+                    Log.e(TAG, "status" + status);
+                    if (status == 0) {
+                        os.close();
+                    }
+                    mSocket.close();
+                } catch (Exception e) {
+
+                }
+                finish();
                 System.exit(0);
 //                mHandler1.removeCallbacks(runnable);
 //                mHandler.removeCallbacks(runnable);
@@ -875,56 +754,77 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
 //                startActivity(intent);
 //                break;
             }
-            case R.id.btn_live: {
-                if (liveStreamManager != null) {
-                    if (liveStreamManager.isStreaming()) {
-                        AlertDialog.Builder normalDialog = new AlertDialog.Builder(MainActivity.this);
-                        normalDialog.setMessage("停止直播?");
-                        normalDialog.setPositiveButton("确定",
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        liveStreamManager.stopStream();
-                                        liveBtn.setText("开始直播！");
-                                    }
-                                });
-                        normalDialog.setNegativeButton("关闭",
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                    }
-                                });
-                        // 显示
-                        normalDialog.show();
-                    } else {
-                        final EditText editText = new EditText(MainActivity.this);
-                        AlertDialog.Builder inputDialog = new AlertDialog.Builder(MainActivity.this);
-                        inputDialog.setTitle("请输入直播地址：").setView(editText);
-                        inputDialog.setPositiveButton("确定",
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-//                                        liveStreamManager.setAudioStreamingEnabled(false);
-//                                        editText.setText("rtmp://192.168.31.6:1935/live");
-//                                        liveStreamManager.setLiveUrl(editText.getText().toString());
-                                        liveStreamManager.setLiveUrl("rtmp://211.149.129.108:10002/uav/u004");
-//                                        liveStreamManager.setLiveUrl("rtmp://192.168.31.6:1935/live");
-                                        liveStreamManager.startStream();
-                                        liveBtn.setText("直播中。。。");
-                                    }
-                                });
-                        inputDialog.setNegativeButton("关闭",
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-
-                                    }
-                                }).show();
-                    }
-                } else
-                    showToast("直播不可用！");
-                break;
-            }
+//            case R.id.btn_end: {
+//                try {
+//                    showPortPara = Integer.parseInt(showPortPara_);
+////                Log.e(TAG, "showUrlPara" + showUrlPara);
+////                Log.e(TAG, "showPortPara" + showPortPara);
+////                mSocket = new Socket("211.149.129.108", 11000);
+//                    mSocket = new Socket(showUrlPara_, showPortPara);
+//                    baseRequest = new BaseRequest();
+//                    baseRequest.setAction("END");
+//                    baseRequest.setUav_no(uavNo_);
+//                    Gson gson = new Gson();
+//                    String JsonBR = gson.toJson(baseRequest) + "SWOOLEFN";
+//                    OutputStream out = mSocket.getOutputStream();
+//                    Log.e(TAG, "End");
+//                    out.write(JsonBR.getBytes());
+//                }
+//                catch (Exception e){
+//
+//                }
+//            }
+//            case R.id.btn_live: {
+//                if (liveStreamManager != null) {
+//                    if (liveStreamManager.isStreaming()) {
+//                        AlertDialog.Builder normalDialog = new AlertDialog.Builder(MainActivity.this);
+//                        normalDialog.setMessage("停止直播?");
+//                        normalDialog.setPositiveButton("确定",
+//                                new DialogInterface.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(DialogInterface dialog, int which) {
+//                                        liveStreamManager.stopStream();
+//                                        liveBtn.setText("开始直播！");
+//                                    }
+//                                });
+//                        normalDialog.setNegativeButton("关闭",
+//                                new DialogInterface.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(DialogInterface dialog, int which) {
+//                                    }
+//                                });
+//                        // 显示
+//                        normalDialog.show();
+//                    } else {
+//                        final EditText editText = new EditText(MainActivity.this);
+//                        AlertDialog.Builder inputDialog = new AlertDialog.Builder(MainActivity.this);
+//                        inputDialog.setTitle("请输入直播地址：").setView(editText);
+//                        inputDialog.setPositiveButton("确定",
+//                                new DialogInterface.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(DialogInterface dialog, int which) {
+////                                        liveStreamManager.setAudioStreamingEnabled(false);
+////                                        editText.setText("rtmp://192.168.31.6:1935/live");
+////                                        liveStreamManager.setLiveUrl(editText.getText().toString());
+//
+//                                        liveStreamManager.setLiveUrl("rtmp://211.149.129.108:10002/uav/u004");
+////                                        liveStreamManager.setLiveUrl("rtmp://192.168.31.6:1935/live");
+//                                        liveStreamManager.startStream();
+//                                        liveBtn.setText("直播中。。。");
+//                                    }
+//                                });
+//                        inputDialog.setNegativeButton("关闭",
+//                                new DialogInterface.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(DialogInterface dialog, int which) {
+//
+//                                    }
+//                                }).show();
+//                    }
+//                } else
+//                    showToast("直播不可用！");
+//                break;
+//            }
 
             default:
                 break;
