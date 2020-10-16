@@ -15,46 +15,41 @@ import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.EditText;
+
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.model.LatLng;
 import com.google.gson.Gson;
-import com.qx.wz.dj.rtcm.StringUtil;
+
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.math.BigDecimal;
+
 import java.net.Socket;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+
 import java.util.Date;
-import java.util.GregorianCalendar;
+
 
 import dji.common.battery.BatteryState;
 
-import dji.common.camera.SystemState;
 import dji.common.error.DJIError;
 
 import dji.common.flightcontroller.FlightControllerState;
 
-import dji.common.flightcontroller.flyzone.UnlockedZoneGroup;
 import dji.common.gimbal.GimbalState;
 import dji.common.product.Model;
 
-import dji.common.remotecontroller.Information;
 import dji.common.useraccount.UserAccountState;
 import dji.common.util.CommonCallbacks;
-import dji.internal.flighthub.FlightHubAuthInterceptor;
-import dji.sdk.base.BaseComponent;
+
 import dji.sdk.base.BaseProduct;
 import dji.sdk.battery.Battery;
 import dji.sdk.camera.Camera;
@@ -62,9 +57,6 @@ import dji.sdk.camera.VideoFeeder;
 import dji.sdk.codec.DJICodecManager;
 import dji.sdk.flightcontroller.Compass;
 import dji.sdk.flightcontroller.FlightController;
-import dji.sdk.flighthub.FlightHubManager;
-import dji.sdk.flighthub.model.FlightHistoricalDetail;
-import dji.sdk.flighthub.model.RealTimeFlightData;
 import dji.sdk.gimbal.Gimbal;
 import dji.sdk.products.Aircraft;
 
@@ -82,14 +74,8 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
 
     protected DJICodecManager mCodecManager = null;
 
-    //sn
-    private BaseComponent baseComponent;
-
-
-    //sn
-
     protected TextureView mVideoSurface = null;
-    private Button returnBtn, endBtn;
+    private Button returnBtn;
     private TextView recordingTime;
     private TextView distanc;
     private TextView compas;
@@ -117,9 +103,9 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
     private Battery mBattery;
     private Compass compass;
     private Gimbal mGimbal;
-    private dji.common.remotecontroller.Information information;
+
     private float compass_float = 0.0f, distance = 0, horizontal_distance = 0;
-    private double droneLocationLat = 181, droneLocationLng = 181, altPitch, altRoll, altYaw;
+    private double droneLocationLat = 181, droneLocationLng = 181;
     private double home_droneLocationLat = 181, home_droneLocationLng = 181;
     private float altitude = 100.0f, VelocityX = 0, VelocityY = 0, VelocityZ = 0, Velocity = 0, batTemperature;
     private int remainingTime, remainingOil;
@@ -127,18 +113,17 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
     private Handler handler;
     private String navStatus, motStatus, comStatus;
     private LiveStreamManager liveStreamManager;
-    private String originAddress;
+
     private BaseRequest baseRequest = null;
     private Uav uav = null;
 
 
     private Socket mSocket = null;
-    private BufferedReader mBufferedReaderClient = null;
-    private PrintWriter mPrintWriterClient = null;
+
     private String showUrl_, showPort_, showUrlPara_, showPortPara_, uavNo_;
-    private String showUrl, showUrlPara, uavNo;
+
     private int showPort, showPortPara;
-    private String strInputstream;
+
     private String key = null;
     private Thread thread1;
     private JSONObject jsonObject = null;
@@ -166,8 +151,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
             }
         }
     };
-    //Socket
-
 
     public MainActivity() {
     }
@@ -188,7 +171,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
 
         initUI();
 
-        //Socket
+
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                 .detectDiskReads()//磁盘读取操作
                 .detectDiskWrites()//磁盘写入操作
@@ -213,52 +196,12 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
             }
         };
 
-//        Camera camera = FPVDemoApplication.getCameraInstance();
-//
-//        if (camera != null) {
-//
-//            camera.setSystemStateCallback(new SystemState.Callback() {
-//                @Override
-//                public void onUpdate(SystemState cameraSystemState) {
-//                    if (null != cameraSystemState) {
-//
-//                        int recordTime = cameraSystemState.getCurrentVideoRecordingTimeInSeconds();
-//                        int minutes = (recordTime % 3600) / 60;
-//                        int seconds = recordTime % 60;
-//
-//                        final String timeString = String.format("%02d:%02d", minutes, seconds);
-//                        final boolean isVideoRecording = cameraSystemState.isRecording();
-//
-//                        MainActivity.this.runOnUiThread(new Runnable() {
-//
-//                            @Override
-//                            public void run() {
-//
-//                                recordingTime.setText(timeString);
-//
-//                                /*
-//                                 * 更新recordingTime TextView的可见性和mRecordBtn的检查状态
-//                                 */
-//                                if (isVideoRecording) {
-//                                    recordingTime.setVisibility(View.VISIBLE);
-//                                } else {
-//                                    recordingTime.setVisibility(View.INVISIBLE);
-//                                }
-//                            }
-//                        });
-//                    }
-//                }
-//            });
-//
-//        }
         mHandler.postDelayed(runnable, 1000);
-
         //开始任务
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-
                     showPortPara = Integer.parseInt(showPortPara_);
                     Log.e(TAG, "showUrlPara_" + showUrlPara_);
                     Log.e(TAG, "showPortPara" + showPortPara);
@@ -277,17 +220,11 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
                     byte[] buffer = new byte[1024];
                     int len = inputStream.read(buffer);
                     os.write(buffer);
-
                     jsonObject = new JSONObject(os.toString());
-
                     Log.e(TAG, "jjj" + jsonObject);
-
                     mSocket.close();
-
-
                 } catch (Exception e) {
                 }
-//                }
             }
         });
         thread.start();
@@ -303,11 +240,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
             }
         });
         thread1.start();
-
-
-        //socket
-
-
     }
 
     protected void onProductChange() {
@@ -316,7 +248,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
     }
 
     private void loginAccount() {
-
         UserAccountManager.getInstance().logIntoDJIUserAccount(this,
                 new CommonCallbacks.CompletionCallbackWith<UserAccountState>() {
                     @Override
@@ -379,9 +310,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
     }
 
     private void initUI() {
-
         mVideoSurface = (TextureView) findViewById(R.id.video_previewer_surface);
-
         distanc = (TextView) findViewById(R.id.distance);
         compas = (TextView) findViewById(R.id.compass);
         speed = (TextView) findViewById(R.id.speed);
@@ -400,18 +329,11 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
         com_status = (TextView) findViewById(R.id.com_status);
         time = (TextView) findViewById(R.id.time);
         returnBtn = (Button) findViewById(R.id.btn_return);
-//        endBtn = (Button) findViewById(R.id.btn_end);
-//        liveBtn = (Button) findViewById(R.id.btn_live);
-
-
         if (null != mVideoSurface) {
             mVideoSurface.setSurfaceTextureListener(this);
         }
-
         returnBtn.setOnClickListener(this);
-//        endBtn.setOnClickListener(this);
         recordingTime.setVisibility(View.INVISIBLE);
-
     }
 
     private void initPreviewer() {
@@ -455,19 +377,14 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
 
             });
         }
-
-        //
         if (mFlightController != null) {
-
             mFlightController.setStateCallback(new FlightControllerState.Callback() {
                 @Override
                 public void onUpdate(FlightControllerState flightControllerState) {
                     //无人机位置纬度
                     droneLocationLat = flightControllerState.getAircraftLocation().getLatitude();
-
                     //无人机位置经度
                     droneLocationLng = flightControllerState.getAircraftLocation().getLongitude();
-
                     //高度
                     altitude = flightControllerState.getAircraftLocation().getAltitude();
                     //返航点纬度
@@ -496,21 +413,18 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
                     } else {
                         motStatus = "故障";
                     }
-                    ;
                     //导航系统是否正常
                     if (flightControllerState.isMultipleModeOpen()) {
                         navStatus = "故障";
                     } else {
                         navStatus = "正常";
                     }
-                    ;
                     //通信系统状态是否正常(这里是遥控器和飞机之间的连接),信号丢失则为true
                     if (flightControllerState.isFailsafeEnabled()) {
                         comStatus = "故障";
                     } else {
                         comStatus = "正常";
                     }
-
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -537,9 +451,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
                     });
                 }
             });
-
         }
-
         if (mBattery != null) {
             mBattery.setStateCallback(new BatteryState.Callback() {
                 @Override
@@ -558,20 +470,17 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
                 }
             });
         }
-
     }
 
     private void uninitPreviewer() {
         Camera camera = FPVDemoApplication.getCameraInstance();
         if (camera != null) {
-            // 重置回调
             VideoFeeder.getInstance().getPrimaryVideoFeed().addVideoDataListener(null);
         }
     }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        Log.e(TAG, "onSurfaceTextureAvailable");
         if (mCodecManager == null) {
             mCodecManager = new DJICodecManager(this, surface, width, height);
         }
@@ -589,7 +498,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
             mCodecManager.cleanSurface();
             mCodecManager = null;
         }
-
         return false;
     }
 
@@ -608,9 +516,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
     Runnable runnable = new Runnable() {
         @Override
         public void run() {
-
-
-            //Socket
             try {
                 showPortPara = Integer.parseInt(showPortPara_);
 //                Log.e(TAG, "showUrlPara" + showUrlPara);
@@ -689,17 +594,12 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
 //                uav.setDistance(distance);
                 Gson gson = new Gson();
                 String JsonUav = gson.toJson(uav) + "SWOOLEFN";
-
                 Log.e(TAG, "kkkkkkkk");
                 out.write(JsonUav.getBytes());
-                uav = null;//gc
-
+                uav = null;
                 mSocket.close();
-
             } catch (Exception e) {
             }
-//            //Socket
-//
             mHandler1.postDelayed(this, 10000);
 
         }
@@ -711,121 +611,53 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
 
         switch (v.getId()) {
             case R.id.btn_return: {
-                try {
-                    showPortPara = Integer.parseInt(showPortPara_);
+                AlertDialog.Builder normalDialog = new AlertDialog.Builder(MainActivity.this);
+                normalDialog.setMessage("确认退出返回主页吗?该操作将导致飞行任务终止!");
+                normalDialog.setPositiveButton("确定",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                try {
+                                    showPortPara = Integer.parseInt(showPortPara_);
 //                Log.e(TAG, "showUrlPara" + showUrlPara);
 //                Log.e(TAG, "showPortPara" + showPortPara);
 //                mSocket = new Socket("211.149.129.108", 11000);
-                    mSocket = new Socket(showUrlPara_, showPortPara);
-                    baseRequest = new BaseRequest();
-                    baseRequest.setAction("END");
-                    baseRequest.setUav_no(uavNo_);
-                    Gson gson = new Gson();
-                    String JsonBR = gson.toJson(baseRequest) + "SWOOLEFN";
-                    OutputStream out = mSocket.getOutputStream();
-                    Log.e(TAG, "End");
-                    out.write(JsonBR.getBytes());
-                    InputStream inputStream = mSocket.getInputStream();
-                    ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    byte[] buffer = new byte[1024];
-                    int len = inputStream.read(buffer);
-                    os.write(buffer);
+                                    mSocket = new Socket(showUrlPara_, showPortPara);
+                                    baseRequest = new BaseRequest();
+                                    baseRequest.setAction("END");
+                                    baseRequest.setUav_no(uavNo_);
+                                    Gson gson = new Gson();
+                                    String JsonBR = gson.toJson(baseRequest) + "SWOOLEFN";
+                                    OutputStream out = mSocket.getOutputStream();
 
-                    jsonObject = new JSONObject(os.toString());
-                    Integer status = jsonObject.getInt("status");
-                    Log.e(TAG, "status" + status);
-                    if (status == 0) {
-                        os.close();
-                    }
-                    mSocket.close();
-                } catch (Exception e) {
+                                    out.write(JsonBR.getBytes());
+                                    InputStream inputStream = mSocket.getInputStream();
+                                    ByteArrayOutputStream os = new ByteArrayOutputStream();
+                                    byte[] buffer = new byte[1024];
+                                    int len = inputStream.read(buffer);
+                                    os.write(buffer);
+                                    jsonObject = new JSONObject(os.toString());
+                                    Integer status = jsonObject.getInt("status");
 
-                }
-                finish();
-                System.exit(0);
-//                mHandler1.removeCallbacks(runnable);
-//                mHandler.removeCallbacks(runnable);
-//                try {
-//                    mSocket.shutdownOutput();
-//                }catch (Exception e){
-//
-//                }
-//                Intent intent = new Intent(this, ConnectionActivity.class);
-//                startActivity(intent);
-//                break;
+                                    if (status == 0) {
+                                        os.close();
+                                    }
+                                    mSocket.close();
+                                } catch (Exception e) {
+                                }
+                                finish();
+                                System.exit(0);
+                            }
+
+                        });
+                normalDialog.setNegativeButton("关闭",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        });
+                normalDialog.show();
             }
-//            case R.id.btn_end: {
-//                try {
-//                    showPortPara = Integer.parseInt(showPortPara_);
-////                Log.e(TAG, "showUrlPara" + showUrlPara);
-////                Log.e(TAG, "showPortPara" + showPortPara);
-////                mSocket = new Socket("211.149.129.108", 11000);
-//                    mSocket = new Socket(showUrlPara_, showPortPara);
-//                    baseRequest = new BaseRequest();
-//                    baseRequest.setAction("END");
-//                    baseRequest.setUav_no(uavNo_);
-//                    Gson gson = new Gson();
-//                    String JsonBR = gson.toJson(baseRequest) + "SWOOLEFN";
-//                    OutputStream out = mSocket.getOutputStream();
-//                    Log.e(TAG, "End");
-//                    out.write(JsonBR.getBytes());
-//                }
-//                catch (Exception e){
-//
-//                }
-//            }
-//            case R.id.btn_live: {
-//                if (liveStreamManager != null) {
-//                    if (liveStreamManager.isStreaming()) {
-//                        AlertDialog.Builder normalDialog = new AlertDialog.Builder(MainActivity.this);
-//                        normalDialog.setMessage("停止直播?");
-//                        normalDialog.setPositiveButton("确定",
-//                                new DialogInterface.OnClickListener() {
-//                                    @Override
-//                                    public void onClick(DialogInterface dialog, int which) {
-//                                        liveStreamManager.stopStream();
-//                                        liveBtn.setText("开始直播！");
-//                                    }
-//                                });
-//                        normalDialog.setNegativeButton("关闭",
-//                                new DialogInterface.OnClickListener() {
-//                                    @Override
-//                                    public void onClick(DialogInterface dialog, int which) {
-//                                    }
-//                                });
-//                        // 显示
-//                        normalDialog.show();
-//                    } else {
-//                        final EditText editText = new EditText(MainActivity.this);
-//                        AlertDialog.Builder inputDialog = new AlertDialog.Builder(MainActivity.this);
-//                        inputDialog.setTitle("请输入直播地址：").setView(editText);
-//                        inputDialog.setPositiveButton("确定",
-//                                new DialogInterface.OnClickListener() {
-//                                    @Override
-//                                    public void onClick(DialogInterface dialog, int which) {
-////                                        liveStreamManager.setAudioStreamingEnabled(false);
-////                                        editText.setText("rtmp://192.168.31.6:1935/live");
-////                                        liveStreamManager.setLiveUrl(editText.getText().toString());
-//
-//                                        liveStreamManager.setLiveUrl("rtmp://211.149.129.108:10002/uav/u004");
-////                                        liveStreamManager.setLiveUrl("rtmp://192.168.31.6:1935/live");
-//                                        liveStreamManager.startStream();
-//                                        liveBtn.setText("直播中。。。");
-//                                    }
-//                                });
-//                        inputDialog.setNegativeButton("关闭",
-//                                new DialogInterface.OnClickListener() {
-//                                    @Override
-//                                    public void onClick(DialogInterface dialog, int which) {
-//
-//                                    }
-//                                }).show();
-//                    }
-//                } else
-//                    showToast("直播不可用！");
-//                break;
-//            }
-
             default:
                 break;
         }

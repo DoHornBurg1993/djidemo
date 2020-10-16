@@ -3,11 +3,9 @@ package com.example.djidemo;
 import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -24,17 +22,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
-import com.dji.mapkit.lbs.helper.StringUtils;
-
-import com.qx.wz.dj.rtcm.StringUtil;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
 import dji.log.DJILog;
@@ -55,7 +45,6 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
     private TextView mTextProduct;
     private TextView mVersionTv;
     private Button mBtnOpen;
-//    private Button mBtnWayPoint;
     private static final String[] REQUIRED_PERMISSION_LIST = new String[]{
             Manifest.permission.VIBRATE,
             Manifest.permission.INTERNET,
@@ -77,15 +66,11 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
     private List<String> missingPermission = new ArrayList<>();
     private AtomicBoolean isRegistrationInProgress = new AtomicBoolean(false);
     private static final int REQUEST_PERMISSION_CODE = 12345;
-    private EditText urlInputEdit,portInputEdit,urlParaInputEdit,portParaInputEdit,uavNoInputEdit;
-    private String showUrl,showPort,showUrlPara,showPortPara,uavNo;
+    private EditText urlInputEdit, portInputEdit, urlParaInputEdit, portParaInputEdit, uavNoInputEdit;
+    private String showUrl, showPort, showUrlPara, showPortPara, uavNo;
     private Button mAddressBtn;
-    private String showUrl_,showPort_,showUrlPara_,showPortPara_,uavNo_;
+    private String showUrl_, showPort_, showUrlPara_, showPortPara_, uavNo_;
     private SQLiteDatabase db;
-
-    //保留上次输入
-//    private SharedPreferences mContextSp;
-//    private SharedPreferences mActivitySp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,16 +85,15 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         db = dbHelper.getWritableDatabase();
 
         String sql = "create table IF NOT EXISTS db_uav(urlInput varchar(20),portInput varchar(20),urlParaInput varchar(20),portParaInput varchar(20),uavNoInput varchar(20))";
-//        String sql = "drop table db_uav";
         db.execSQL(sql);
 
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                Cursor cursor =db.rawQuery("select urlInput,portInput,urlParaInput,portParaInput,uavNoInput from db_uav",null);
+                Cursor cursor = db.rawQuery("select urlInput,portInput,urlParaInput,portParaInput,uavNoInput from db_uav", null);
                 while (cursor.moveToNext()) {
-                   showUrl =  cursor.getString(0);
-                    showPort=cursor.getString(1);
+                    showUrl = cursor.getString(0);
+                    showPort = cursor.getString(1);
                     showUrlPara = cursor.getString(2);
                     showPortPara = cursor.getString(3);
                     uavNo = cursor.getString(4);
@@ -117,20 +101,14 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
                 cursor.close(); // 关闭游标，释放资源
             }
         });
-
         thread.start();
-
         initUI();
-
-        // Register the broadcast receiver for receiving the device connection's changes.
         IntentFilter filter = new IntentFilter();
         filter.addAction(FPVDemoApplication.FLAG_CONNECTION_CHANGE);
         registerReceiver(mReceiver, filter);
-
-
     }
 
-//    检查是否缺少权限，并在需要时请求运行时权限。
+    //    检查是否缺少权限，并在需要时请求运行时权限。
     private void checkAndRequestPermissions() {
         // Check for permissions
         for (String eachPermission : REQUIRED_PERMISSION_LIST) {
@@ -146,7 +124,6 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         }
 
     }
-
 
     /**
      * 运行时权限请求的结果
@@ -177,7 +154,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
             AsyncTask.execute(new Runnable() {
                 @Override
                 public void run() {
-                    showToast( "注册中,请等待...");
+                    showToast("注册中,请等待...");
                     DJISDKManager.getInstance().registerApp(getApplicationContext(), new DJISDKManager.SDKManagerCallback() {
                         @Override
                         public void onRegister(DJIError djiError) {
@@ -186,7 +163,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
                                 DJISDKManager.getInstance().startConnectionToProduct();
                                 showToast("注册成功!");
                             } else {
-                                showToast( "注册sdk失败,检查网络是否可用");
+                                showToast("注册sdk失败,检查网络是否可用");
                             }
                             Log.v(TAG, djiError.getDescription());
                         }
@@ -197,6 +174,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
                             showToast("无人机断开连接!");
 
                         }
+
                         @Override
                         public void onProductConnect(BaseProduct baseProduct) {
                             Log.d(TAG, String.format("onProductConnect newProduct:%s", baseProduct));
@@ -298,12 +276,9 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         uavNoInputEdit.setText(uavNo);
         uavNoInputEdit.setOnClickListener(this);
 
-        mAddressBtn=(Button) findViewById(R.id.btn_address);
+        mAddressBtn = (Button) findViewById(R.id.btn_address);
         mAddressBtn.setOnClickListener(this);
         mAddressBtn.setEnabled(false);
-//        mBtnWayPoint=(Button)findViewById(R.id.btn_waypoint);
-//        mBtnWayPoint.setOnClickListener(this);
-//        mBtnWayPoint.setEnabled(false);
     }
 
     protected BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -319,9 +294,6 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
 
         if (null != mProduct && mProduct.isConnected()) {
 
-            Log.v(TAG, "refreshSDK: True");
-
-//            mBtnOpen.setEnabled(true);
             mAddressBtn.setEnabled(true);
             String str = mProduct instanceof Aircraft ? "大疆无人机" : "大疆手持设备";
             mTextConnectionStatus.setText("状态: " + str + " 已经连接");
@@ -329,7 +301,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
             if (null != mProduct.getModel()) {
                 mTextProduct.setText("产品名称:" + mProduct.getModel().getDisplayName());
             } else {
-                mTextProduct.setText("产品名称:"+R.string.product_information);
+                mTextProduct.setText("产品名称:" + R.string.product_information);
             }
 
         } else {
@@ -337,7 +309,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
             Log.v(TAG, "refreshSDK: False");
             mBtnOpen.setEnabled(false);
 
-            mTextProduct.setText("产品名称:"+R.string.product_information);
+            mTextProduct.setText("产品名称:" + R.string.product_information);
             mTextConnectionStatus.setText(R.string.connection_loose);
         }
     }
@@ -347,11 +319,11 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         switch (v.getId()) {
             case R.id.btn_open: {
                 Intent intent = new Intent(this, MainActivity.class);
-                intent.putExtra("showUrl_",showUrl_);
-                intent.putExtra("showPort_",showPort_);
-                intent.putExtra("showUrlPara_",showUrlPara_);
-                intent.putExtra("showPortPara_",showPortPara_);
-                intent.putExtra("uavNo_",uavNo_);
+                intent.putExtra("showUrl_", showUrl_);
+                intent.putExtra("showPort_", showPort_);
+                intent.putExtra("showUrlPara_", showUrlPara_);
+                intent.putExtra("showPortPara_", showPortPara_);
+                intent.putExtra("uavNo_", uavNo_);
                 startActivity(intent);
                 break;
             }
@@ -359,26 +331,22 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
                 String sqlDelete = "delete from db_uav";
                 db.execSQL(sqlDelete);
                 showUrl_ = urlInputEdit.getText().toString();
-                showPort_=portInputEdit.getText().toString();
-                showUrlPara_=urlParaInputEdit.getText().toString();
-                showPortPara_=portParaInputEdit.getText().toString();
-                uavNo_=uavNoInputEdit.getText().toString();
+                showPort_ = portInputEdit.getText().toString();
+                showUrlPara_ = urlParaInputEdit.getText().toString();
+                showPortPara_ = portParaInputEdit.getText().toString();
+                uavNo_ = uavNoInputEdit.getText().toString();
 
-                String sqlInsert1 = "insert into db_uav (urlInput,portInput,urlParaInput,portParaInput,uavNoInput) values ('"+showUrl_+"','"+showPort_+"','"+showUrlPara_+"','"+showPortPara_+"','"+uavNo_+"')";
+                String sqlInsert1 = "insert into db_uav (urlInput,portInput,urlParaInput,portParaInput,uavNoInput) values ('" + showUrl_ + "','" + showPort_ + "','" + showUrlPara_ + "','" + showPortPara_ + "','" + uavNo_ + "')";
                 db.execSQL(sqlInsert1);
 
                 showToast("你已经完成输入");
 
-                    mBtnOpen.setEnabled(true);
+                mBtnOpen.setEnabled(true);
 
 
                 break;
             }
-//            case R.id.btn_waypoint: {
-//                Intent intent = new Intent(this, CompleteWidgetActivity1.class);
-//                startActivity(intent);
-//                break;
-//            }
+
             default:
                 break;
         }
