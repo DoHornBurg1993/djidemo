@@ -2,7 +2,7 @@
 
  <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
-        package="com.example.djidemo">
+        package="com.ast.djisdk">
         <uses-permission android:name="android.permission.BLUETOOTH" />
         <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
         <uses-permission android:name="android.permission.VIBRATE" />
@@ -38,7 +38,7 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
-            android:name=".MApplication"
+            android:name="com.ast.djisdk.MApplication"
             android:usesCleartextTraffic="true"
 
 
@@ -72,7 +72,7 @@
                     android:resource="@xml/accessory_filter" />
             </activity>
             <activity
-                android:name=".ConnectionActivity"
+                android:name="com.ast.djisdk.ConnectionActivity"
                 android:configChanges="orientation"
                 android:screenOrientation="portrait">
                 <intent-filter>
@@ -84,24 +84,24 @@
 
             <service android:name="dji.sdk.sdkmanager.DJIGlobalService"/> <!-- DJI SDK -->
             <activity
-                android:name=".CompleteWidgetActivity"
+                android:name="com.ast.djisdk.CompleteWidgetActivity"
                 android:label="Default Widgets"
                 android:launchMode = "singleTop"
                 android:screenOrientation="sensorLandscape"
                 android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"/>
             <activity
-                android:name=".CompleteWidgetActivity1"
+                android:name="com.ast.djisdk.CompleteWidgetActivity1"
                 android:label="Default Widgets"
                 android:launchMode = "singleTop"
                 android:screenOrientation="sensorLandscape"
                 android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"/>
-            <activity android:name=".MainActivity"
+            <activity android:name="com.ast.djisdk.MainActivity"
                 android:screenOrientation="landscape"></activity>
 
             <activity
-                android:name=".MediaActivity"
+                android:name="com.ast.djisdk.MediaActivity"
                 android:screenOrientation="landscape"></activity>
-            <activity android:name=".waypoint_mission" />
+            <activity android:name="com.ast.djisdk.waypoint_mission" />
         </application>
 
     </manifest>

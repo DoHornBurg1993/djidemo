@@ -39,7 +39,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="480dp"
         android:background="@drawable/round_btn"
-        android:text="打开无人机画面"
+        android:text="@string/openUav"
         android:textColor="@color/colorWhite"
         android:textSize="20dp"
         />
@@ -49,7 +49,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="190dp"
         android:layout_centerHorizontal="true"
-        android:hint="请输入推流ip"
+        android:hint="@string/importLiveIp"
         android:inputType="textUri" />
     <Button
         android:id="@+id/btn_address"
@@ -58,7 +58,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="400dp"
         android:background="@drawable/round_btn"
-        android:text="确认输入"
+        android:text="@string/confirmInport"
         android:textColor="@color/colorWhite"
         android:textSize="20dp"
         />
@@ -67,7 +67,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="550dp"
+        android:layout_marginTop="630dp"
         android:text="@string/sdk_version"
         android:textSize="15dp"
         android:id="@+id/textView2" />
@@ -76,7 +76,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="大疆AST开发"
+        android:text="@string/title"
         android:id="@+id/textView"
         android:layout_marginTop="58dp"
         android:textStyle="bold"
@@ -90,10 +90,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="200dp"
-        android:layout_marginLeft="50dp"
+        android:layout_marginLeft="40dp"
         android:textStyle="bold"
         android:textSize="20dp"
-        android:text="直播流" />
+        android:text="@string/livingStream" />
 
     <TextView
         android:id="@+id/textView4"
@@ -112,24 +112,24 @@
         android:layout_marginTop="190dp"
         android:layout_marginLeft="15dp"
         android:layout_alignLeft="@id/textView4"
-        android:hint="端口号"
+        android:hint="@string/importPort"
         android:inputType="textUri" />
     <TextView
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="260dp"
-        android:layout_marginLeft="40dp"
+        android:layout_marginLeft="30dp"
         android:textStyle="bold"
         android:textSize="20dp"
-        android:text="飞行数据" />
+        android:text="@string/flyParaTran" />
     <EditText
         android:id="@+id/edit_url_input1"
         android:layout_width="145dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="250dp"
         android:layout_centerHorizontal="true"
-        android:hint="请输入传数据ip"
+        android:hint="@string/importParaIp"
         android:inputType="textUri" />
     <TextView
         android:id="@+id/textView6"
@@ -147,7 +147,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="250dp"
         android:layout_marginLeft="15dp"
-        android:hint="端口号"
+        android:hint="@string/importPort"
         android:layout_alignLeft="@id/textView6"
         android:inputType="textUri" />
     <EditText
@@ -156,15 +156,26 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="310dp"
         android:layout_centerHorizontal="true"
-        android:hint="请输入编号"
+        android:hint="@string/importNo"
         android:inputType="textShortMessage" />
     <TextView
         android:id="@+id/textView7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="320dp"
-        android:layout_marginLeft="40dp"
+        android:layout_marginLeft="30dp"
         android:textStyle="bold"
         android:textSize="20dp"
-        android:text="无人机编号" />
+        android:text="@string/uavNo" />
+    <Button
+        android:id="@+id/btn_exit"
+        android:layout_width="150dp"
+        android:layout_height="55dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="560dp"
+        android:background="@drawable/round_btn"
+        android:text="@string/exit"
+        android:textColor="@color/colorWhite"
+        android:textSize="20dp"
+        />
 </RelativeLayout>

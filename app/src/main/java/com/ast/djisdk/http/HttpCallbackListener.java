@@ -1,4 +1,4 @@
-package com.example.djidemo.http;
+package com.ast.djisdk.http;
 
 /**
  * @author： DuHongBo

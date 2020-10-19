@@ -6,7 +6,7 @@
                 android:layout_height="match_parent"
                 android:background="@color/background_blue"
                 android:id="@+id/root_view"
-                tools:context="com.example.djidemo.MainActivity">
+                tools:context="com.ast.djisdk.MainActivity">
 
     <!-- Widget to see first person view (FPV) -->
     <dji.ux.widget.FPVWidget

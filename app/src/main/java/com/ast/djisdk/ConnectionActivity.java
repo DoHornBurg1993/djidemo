@@ -1,9 +1,11 @@
-package com.example.djidemo;
+package com.ast.djisdk;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -22,6 +24,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,7 +47,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
     private TextView mTextConnectionStatus;
     private TextView mTextProduct;
     private TextView mVersionTv;
-    private Button mBtnOpen;
+    private Button mBtnOpen,mAddressBtn,mExitBtn;
     private static final String[] REQUIRED_PERMISSION_LIST = new String[]{
             Manifest.permission.VIBRATE,
             Manifest.permission.INTERNET,
@@ -59,7 +62,7 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
             Manifest.permission.BLUETOOTH_ADMIN,
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.READ_PHONE_STATE,
-            //添加相机和录音权限
+            //添加相机和录音权限,可以减少直播延迟
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO
     };
@@ -68,7 +71,6 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
     private static final int REQUEST_PERMISSION_CODE = 12345;
     private EditText urlInputEdit, portInputEdit, urlParaInputEdit, portParaInputEdit, uavNoInputEdit;
     private String showUrl, showPort, showUrlPara, showPortPara, uavNo;
-    private Button mAddressBtn;
     private String showUrl_, showPort_, showUrlPara_, showPortPara_, uavNo_;
     private SQLiteDatabase db;
 
@@ -133,7 +135,6 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        // Check for granted permission and remove from missing list
         if (requestCode == REQUEST_PERMISSION_CODE) {
             for (int i = grantResults.length - 1; i >= 0; i--) {
                 if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
@@ -279,6 +280,10 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
         mAddressBtn = (Button) findViewById(R.id.btn_address);
         mAddressBtn.setOnClickListener(this);
         mAddressBtn.setEnabled(false);
+
+        mExitBtn = (Button) findViewById(R.id.btn_exit);
+        mExitBtn.setOnClickListener(this);
+        mExitBtn.setEnabled(true);
     }
 
     protected BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -346,7 +351,26 @@ public class ConnectionActivity extends Activity implements View.OnClickListener
 
                 break;
             }
+            case R.id.btn_exit:{
+                AlertDialog.Builder normalDialog = new AlertDialog.Builder(ConnectionActivity.this);
+                normalDialog.setMessage("确认退出App吗?");
+                normalDialog.setPositiveButton("确定",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                finish();
+                                System.exit(0);
+                            }
 
+                        });
+                normalDialog.setNegativeButton("取消",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        });
+                normalDialog.show();
+            }
             default:
                 break;
         }

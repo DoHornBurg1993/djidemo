@@ -3,10 +3,6 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
-
-
-
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -16,13 +12,13 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <com.example.admin.ztest.live.VideoFeedView
+                <com.ast.admin.ztest.live.VideoFeedView
                     android:id="@+id/video_view_primary_video_feed"
                     style="@style/main_camera_view"
                     android:layout_alignParentBottom="false"
                     android:layout_marginTop="30dp" />
 
-                <com.example.admin.ztest.live.VideoFeedView
+                <com.ast.admin.ztest.live.VideoFeedView
                     android:id="@+id/video_view_fpv_video_feed"
                     android:visibility="gone"
                     style="@style/main_camera_view"

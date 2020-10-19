@@ -1,14 +1,14 @@
-package com.example.djidemo;
+package com.ast.djisdk;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -26,32 +26,35 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.amap.api.maps.model.LatLng;
-import com.amap.api.maps.model.Marker;
+import com.dji.mapkit.core.camera.DJICameraUpdateFactory;
+import com.dji.mapkit.core.maps.DJIMap;
+import com.dji.mapkit.core.models.DJIBitmapDescriptorFactory;
+import com.dji.mapkit.core.models.DJILatLng;
+import com.dji.mapkit.core.models.annotations.DJIMarker;
+import com.dji.mapkit.core.models.annotations.DJIMarkerOptions;
+import com.dji.mapkit.core.models.annotations.DJIPolyline;
+import com.dji.mapkit.core.models.annotations.DJIPolylineOptions;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 
 import dji.common.accessory.SettingsDefinitions;
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.FlightControllerState;
-import dji.common.flightcontroller.flyzone.FlyZoneInformation;
+import dji.common.flightcontroller.flyzone.FlyZoneCategory;
 import dji.common.mission.waypoint.Waypoint;
+import dji.common.mission.waypoint.WaypointAction;
+import dji.common.mission.waypoint.WaypointActionType;
 import dji.common.mission.waypoint.WaypointMission;
 import dji.common.mission.waypoint.WaypointMissionDownloadEvent;
 import dji.common.mission.waypoint.WaypointMissionExecutionEvent;
 import dji.common.mission.waypoint.WaypointMissionFinishedAction;
 import dji.common.mission.waypoint.WaypointMissionFlightPathMode;
 import dji.common.mission.waypoint.WaypointMissionHeadingMode;
-import dji.common.mission.waypoint.WaypointMissionState;
 import dji.common.mission.waypoint.WaypointMissionUploadEvent;
 import dji.common.useraccount.UserAccountState;
 import dji.common.util.CommonCallbacks;
@@ -67,7 +70,6 @@ import dji.sdk.accessory.speaker.TransmissionListener;
 import dji.sdk.accessory.spotlight.Spotlight;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.Camera;
-import dji.sdk.flightcontroller.Compass;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.mission.waypoint.WaypointMissionOperator;
 import dji.sdk.mission.waypoint.WaypointMissionOperatorListener;
@@ -76,6 +78,7 @@ import dji.sdk.sdkmanager.DJISDKManager;
 import dji.sdk.sdkmanager.LiveStreamManager;
 import dji.sdk.useraccount.UserAccountManager;
 import dji.ux.widget.FPVWidget;
+import dji.ux.widget.MapWidget;
 import dji.ux.widget.controls.CameraControlsWidget;
 
 import static dji.common.camera.SettingsDefinitions.DisplayMode.MSX;
@@ -85,63 +88,64 @@ import static dji.common.camera.SettingsDefinitions.DisplayMode.VISUAL_ONLY;
 /**
  * @author： DuHongBo
  */
-public class CompleteWidgetActivity1 extends Activity implements View.OnClickListener, GaoDeMapFragment.clickLatLngListener{
+public class CompleteWidgetActivity extends Activity implements View.OnClickListener, DJIMap.OnMapClickListener {
 
-
+    private MapWidget mapWidget;
     private ViewGroup parentView;
     private FPVWidget fpvWidget;
     private FPVWidget secondaryFPVWidget;
+    private RelativeLayout primaryVideoView;
     private FrameLayout secondaryVideoView;
     private boolean isMapMini = true;
-    private GaoDeMapFragment myMapFragment;
+
     private int height;
     private int width;
     private int margin;
     private int deviceWidth;
     private int deviceHeight;
-    private FrameLayout fMapView;
-    private double droneLocationLat = 181, droneLocationLng = 181;
-    private double home_droneLocationLat =181, home_droneLocationLng = 181;
-    private final Map<Integer, Marker> mMarkers = new ConcurrentHashMap<Integer, Marker>();
-    private List<Marker> arrayList_xunxian_Marker = new ArrayList<>();
-    private boolean is_xunxian_add = true;
-    private float altitude = 100.0f;
-    private float mSpeed = 10.0f;
-    protected static final String TAG = "CompleteWidgetActivity";
-    private List<Waypoint> waypointList = new ArrayList<>();
-    private Compass compass;
-    private float compass_float = 0.0f;
-    public static WaypointMission.Builder waypointMissionBuilder;
-    private FlightController mFlightController;
-    private WaypointMissionOperator instance;
-    private WaypointMissionFinishedAction mFinishedAction = WaypointMissionFinishedAction.NO_ACTION;
-    private WaypointMissionHeadingMode mHeadingMode = WaypointMissionHeadingMode.AUTO;
-    private Button locate, add, clear;
-    private Button config, upload, start,pause, stop,rtmp;
+    private AudioRecorderHandler audioRecoderHandler;
+    private int last_rec,msx_values=0;
+    private Camera camera;
     private Button spotlight,beacon,rec_speaker,play_mode,stop_record;
     private Button visual_only,thermal_only,msx,msx_plus,msx_minus;
     private TextView camera_status;
-    private double pi_GD = 3.14159265358979324;
-    private double a = 6378245.0;
-    private double ee = 0.00669342162296594323;
     private AccessoryAggregation accessoryAggregation;
-    private boolean on_off_light=true,on_off_beacon=true;
     private Spotlight light;
     private Beacon beacon_light;
     private Speaker speaker;
     private DJIKey beaconEnabledKey;
     private DJIKey spotlightEnabledKey;
     private DJIKey playModeKey;
-    private AudioRecorderHandler audioRecoderHandler;
-    private int last_rec,msx_values=0;
+    protected static final String TAG = "CompleteWidgetActivity";
+
+    private DJIMap aMap;
+    private Button locate, add, clear,rtmp;
+    private Button config, upload, start, stop,pause;
+    private boolean isAdd = false,pause_resume=true;
+
+    private double droneLocationLat = 181, droneLocationLng = 181;
+
+    private float altitude = 100.0f;
+    private float mSpeed = 10.0f;
+
+    private List<Waypoint> waypointList = new ArrayList<>();
+
+    public static WaypointMission.Builder waypointMissionBuilder;
+    private FlightController mFlightController;
+    private WaypointMissionOperator instance;
+    private WaypointMissionFinishedAction mFinishedAction = WaypointMissionFinishedAction.NO_ACTION;
+    private WaypointMissionHeadingMode mHeadingMode = WaypointMissionHeadingMode.AUTO;
+    private List<DJIMarker> mark_on_map=new ArrayList<>();
+    private List<DJIPolyline> line_on_map=new ArrayList<>();
     private LiveStreamManager liveStreamManager;
-    private Camera camera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_default_widgets1);
-
+        setContentView(R.layout.activity_default_widgets);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(FPVDemoApplication.FLAG_CONNECTION_CHANGE);
+        registerReceiver(mReceiver, filter);
         height = DensityUtil.dip2px(this, 200);
         width = DensityUtil.dip2px(this, 300);
         margin = DensityUtil.dip2px(this, 12);
@@ -149,21 +153,31 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         deviceHeight = displayMetrics.heightPixels;
         deviceWidth = displayMetrics.widthPixels;
+        mapWidget = findViewById(R.id.map_widget);
+        mapWidget.initAMap(new MapWidget.OnMapReadyListener() {
+            @Override
+            public void onMapReady(@NonNull DJIMap map) {
+                map.setOnMapClickListener(new DJIMap.OnMapClickListener() {
+                    @Override
+                    public void onMapClick(DJILatLng latLng) {
+                        onViewClick(mapWidget);
+                    }
+                });
+            }
+        });
+        mapWidget.onCreate(savedInstanceState);
 
-        myMapFragment=new GaoDeMapFragment();
-
-        parentView = findViewById(R.id.root_view);
+        parentView = (ViewGroup) findViewById(R.id.root_view);
 
         fpvWidget = findViewById(R.id.fpv_widget);
         fpvWidget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onViewClick(fpvWidget);
-                myMapFragment.is_big=false;
             }
         });
-
-        secondaryVideoView = findViewById(R.id.secondary_video_view);
+        primaryVideoView = (RelativeLayout) findViewById(R.id.fpv_container);
+        secondaryVideoView = (FrameLayout) findViewById(R.id.secondary_video_view);
         secondaryFPVWidget = findViewById(R.id.secondary_fpv_widget);
         secondaryFPVWidget.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -171,39 +185,16 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
                 swapVideoSource();
             }
         });
-        fMapView=findViewById(R.id.map_widget);
-        FragmentManager fm= getFragmentManager();
-        FragmentTransaction transaction = fm.beginTransaction();
-        transaction.add(R.id.map_widget,myMapFragment);
-        transaction.commit();
         updateSecondaryVideoVisibility();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(FPVDemoApplication.FLAG_CONNECTION_CHANGE);
-        registerReceiver(mReceiver, filter);
-        addListener();
+
         initUI();
         initDJIKey();
+        initMapView();
+        addListener();
         audioRecoderHandler = new AudioRecorderHandler(this);
-
-        Timer t=new Timer();
-        t.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                initFlightController();
-            }
-        },7000);
     }
 
     private void initUI() {
-
-        locate = (Button) findViewById(R.id.locate);
-        add = (Button) findViewById(R.id.add);
-        clear = (Button) findViewById(R.id.clear);
-        config = (Button) findViewById(R.id.config);
-        upload = (Button) findViewById(R.id.upload);
-        start = (Button) findViewById(R.id.start);
-        stop = (Button) findViewById(R.id.stop);
-        pause = (Button) findViewById(R.id.pause);
         spotlight=findViewById(R.id.spotlight);
         beacon=findViewById(R.id.beacon);
         rec_speaker=findViewById(R.id.rec_speaker);
@@ -212,14 +203,21 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
         stop_record=findViewById(R.id.stop_record);
         findViewById(R.id.play_record).setOnClickListener(this);
         findViewById(R.id.stop_playing).setOnClickListener(this);
-        rtmp=findViewById(R.id.rtmp);
         visual_only=findViewById(R.id.visual_only);
         thermal_only=findViewById(R.id.thermal_only);
         msx=findViewById(R.id.msx);
         msx_plus=findViewById(R.id.msx_plus);
         msx_minus=findViewById(R.id.msx_minus);
         camera_status=findViewById(R.id.camera_status);
-        findViewById(R.id.nfz).setOnClickListener(this);
+        locate = (Button) findViewById(R.id.locate);
+        add = (Button) findViewById(R.id.add);
+        clear = (Button) findViewById(R.id.clear);
+        config = (Button) findViewById(R.id.config);
+        upload = (Button) findViewById(R.id.upload);
+        start = (Button) findViewById(R.id.start);
+        stop = (Button) findViewById(R.id.stop);
+        pause=(Button) findViewById(R.id.pause) ;
+        rtmp=findViewById(R.id.rtmp);
 
         locate.setOnClickListener(this);
         add.setOnClickListener(this);
@@ -234,35 +232,49 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
         rec_speaker.setOnClickListener(this);
         play_mode.setOnClickListener(this);
         stop_record.setOnClickListener(this);
-        rtmp.setOnClickListener(this);
         visual_only.setOnClickListener(this);
         thermal_only.setOnClickListener(this);
         msx.setOnClickListener(this);
         msx_plus.setOnClickListener(this);
         msx_minus.setOnClickListener(this);
+        rtmp.setOnClickListener(this);
+    }
+
+    private void initDJIKey() {
+        beaconEnabledKey = AccessoryAggregationKey.createBeaconKey(AccessoryAggregationKey.BEACON_ENABLED);
+        spotlightEnabledKey = AccessoryAggregationKey.createSpotlightKey(AccessoryAggregationKey.SPOTLIGHT_ENABLED);
+        playModeKey = AccessoryAggregationKey.createSpeakerKey(AccessoryAggregationKey.PLAY_MODE);
+    }
+
+    private void initMapView() {
+
+        if (aMap == null) {
+            aMap = mapWidget.getMap();
+            aMap.setOnMapClickListener(this);// add the listener for click for amap object
+            mapWidget.setFlyZoneVisible(FlyZoneCategory.RESTRICTED,true);
+            mapWidget.setMapCenterLock(MapWidget.MapCenterLock.NONE);
+        }
     }
 
     private void onViewClick(View view) {
         if (view == fpvWidget && !isMapMini) {
             resizeFPVWidget(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT, 0, 0);
             reorderCameraCapturePanel();
-            ResizeAnimation mapViewAnimation = new ResizeAnimation(fMapView, deviceWidth, deviceHeight, width, height, margin);
-            fMapView.startAnimation(mapViewAnimation);
+            ResizeAnimation mapViewAnimation = new ResizeAnimation(mapWidget, deviceWidth, deviceHeight, width, height, margin);
+            mapWidget.startAnimation(mapViewAnimation);
             isMapMini = true;
-            myMapFragment.is_big=false;
-        } else if (view == fMapView && isMapMini) {
+        } else if (view == mapWidget && isMapMini) {
             hidePanels();
             resizeFPVWidget(width, height, margin, 12);
             reorderCameraCapturePanel();
-            ResizeAnimation mapViewAnimation = new ResizeAnimation(fMapView, width, height, deviceWidth, deviceHeight, 0);
-            fMapView.startAnimation(mapViewAnimation);
+            ResizeAnimation mapViewAnimation = new ResizeAnimation(mapWidget, width, height, deviceWidth, deviceHeight, 0);
+            mapWidget.startAnimation(mapViewAnimation);
             isMapMini = false;
-
         }
     }
 
     private void resizeFPVWidget(int width, int height, int margin, int fpvInsertPosition) {
-        RelativeLayout.LayoutParams fpvParams = (RelativeLayout.LayoutParams) fpvWidget.getLayoutParams();
+        RelativeLayout.LayoutParams fpvParams = (RelativeLayout.LayoutParams) primaryVideoView.getLayoutParams();
         fpvParams.height = height;
         fpvParams.width = width;
         fpvParams.rightMargin = margin;
@@ -276,10 +288,10 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
             fpvParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
             fpvParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         }
-        fpvWidget.setLayoutParams(fpvParams);
+        primaryVideoView.setLayoutParams(fpvParams);
 
-        parentView.removeView(fpvWidget);
-        parentView.addView(fpvWidget, fpvInsertPosition);
+        parentView.removeView(primaryVideoView);
+        parentView.addView(primaryVideoView, fpvInsertPosition);
     }
 
     private void reorderCameraCapturePanel() {
@@ -307,16 +319,18 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
     }
 
     private void hidePanels() {
-        //这些面板的出现是基于无人机本身的按键。
-        KeyManager.getInstance().setValue(CameraKey.create(CameraKey.HISTOGRAM_ENABLED), false, null);
-        KeyManager.getInstance().setValue(CameraKey.create(CameraKey.COLOR_WAVEFORM_ENABLED), false, null);
+        //These panels appear based on keys from the drone itself.
+        if (KeyManager.getInstance() != null) {
+            KeyManager.getInstance().setValue(CameraKey.create(CameraKey.HISTOGRAM_ENABLED), false, null);
+            KeyManager.getInstance().setValue(CameraKey.create(CameraKey.COLOR_WAVEFORM_ENABLED), false, null);
+        }
 
-        //这些面板有按钮来切换它们，因此调用这些方法来确保按钮状态是正确的。
+        //These panels have buttons that toggle them, so call the methods to make sure the button state is correct.
         CameraControlsWidget controlsWidget = findViewById(R.id.CameraCapturePanel);
         controlsWidget.setAdvancedPanelVisibility(false);
         controlsWidget.setExposurePanelVisibility(false);
 
-        //这些面板没有按钮状态，所以我们可以隐藏它们。
+        //These panels don't have a button state, so we can just hide them.
         findViewById(R.id.pre_flight_check_list).setVisibility(View.GONE);
         findViewById(R.id.rtk_panel).setVisibility(View.GONE);
         findViewById(R.id.spotlight_panel).setVisibility(View.GONE);
@@ -324,221 +338,175 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        // 隐藏导航栏和状态栏。
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+        mapWidget.onResume();
+        initFlightController();
+    }
+
+    @Override
+    protected void onPause() {
+        mapWidget.onPause();
+        super.onPause();
+    }
+
+    @Override
     protected void onDestroy() {
+        mapWidget.onDestroy();
         unregisterReceiver(mReceiver);
         removeListener();
         super.onDestroy();
-
     }
 
-    public void clicklatlnglistener(LatLng v, int i) {
-        if (isMapMini) {
-            onViewClick(fMapView);
-            myMapFragment.is_big=true;
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mapWidget.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mapWidget.onLowMemory();
+    }
+
+    @Override
+    public void onMapClick(DJILatLng djiLatLng) {
+        if (isAdd){
+            markWaypoint(djiLatLng);
+            Waypoint mWaypoint = new Waypoint(djiLatLng.latitude, djiLatLng.longitude, altitude);
+
+            int j =mark_on_map.size();
+            Log.e("mark_on_map",j+"");
+            if(mark_on_map.size()>1){
+                DJIPolyline p = aMap.addPolyline((new DJIPolylineOptions()).add(mark_on_map.get(j - 2).getPosition(), mark_on_map.get(j - 1).getPosition()).color(Color.RED).width(5));
+                line_on_map.add(p);
+            }
+            mWaypoint.addAction(new WaypointAction(WaypointActionType.GIMBAL_PITCH,-70));
+            mWaypoint.addAction(new WaypointAction(WaypointActionType.START_TAKE_PHOTO,3));
+            mWaypoint.addAction(new WaypointAction(WaypointActionType.GIMBAL_PITCH,0));
+            mWaypoint.addAction(new WaypointAction(WaypointActionType.START_TAKE_PHOTO,6));
+            mWaypoint.addAction(new WaypointAction(WaypointActionType.GIMBAL_PITCH,-50));
+            //Add Waypoints to Waypoint arraylist;
+            if (waypointMissionBuilder != null) {
+                waypointList.add(mWaypoint);
+                waypointMissionBuilder.waypointList(waypointList).waypointCount(waypointList.size());
+            }else
+            {
+                waypointMissionBuilder = new WaypointMission.Builder();
+                waypointList.add(mWaypoint);
+                waypointMissionBuilder.waypointList(waypointList).waypointCount(waypointList.size());
+            }
+        }else{
+            setResultToToast("Cannot Add Waypoint");
         }
     }
 
-    private void initDJIKey() {
-        beaconEnabledKey = AccessoryAggregationKey.createBeaconKey(AccessoryAggregationKey.BEACON_ENABLED);
-        spotlightEnabledKey = AccessoryAggregationKey.createSpotlightKey(AccessoryAggregationKey.SPOTLIGHT_ENABLED);
-        playModeKey = AccessoryAggregationKey.createSpeakerKey(AccessoryAggregationKey.PLAY_MODE);
+    private class ResizeAnimation extends Animation {
+
+        private View mView;
+        private int mToHeight;
+        private int mFromHeight;
+
+        private int mToWidth;
+        private int mFromWidth;
+        private int mMargin;
+
+        private ResizeAnimation(View v, int fromWidth, int fromHeight, int toWidth, int toHeight, int margin) {
+            mToHeight = toHeight;
+            mToWidth = toWidth;
+            mFromHeight = fromHeight;
+            mFromWidth = fromWidth;
+            mView = v;
+            mMargin = margin;
+            setDuration(300);
+        }
+
+        @Override
+        protected void applyTransformation(float interpolatedTime, Transformation t) {
+            float height = (mToHeight - mFromHeight) * interpolatedTime + mFromHeight;
+            float width = (mToWidth - mFromWidth) * interpolatedTime + mFromWidth;
+            RelativeLayout.LayoutParams p = (RelativeLayout.LayoutParams) mView.getLayoutParams();
+            p.height = (int) height;
+            p.width = (int) width;
+            p.rightMargin = mMargin;
+            p.bottomMargin = mMargin;
+            mView.requestLayout();
+        }
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.locate:{
-                updateDroneLocation();
-                myMapFragment.cameraUpdate(new LatLng(droneLocationLat, droneLocationLng)); // Locate the drone's place
-                break;
-            }
-            case R.id.add:{
-                if (is_xunxian_add) {
-                    add.setText("编辑完成");
-                    myMapFragment.markWaypoint_xunxian(is_xunxian_add);
-                } else {
-                    add.setText("添加航点");
-                    myMapFragment.markWaypoint_xunxian(is_xunxian_add);
-                    arrayList_xunxian_Marker.clear();
-                    arrayList_xunxian_Marker.addAll(myMapFragment.get_arrayList_xunxian_Marker());
-                    for(int i=0;i<arrayList_xunxian_Marker.size();i++) {
-                        Gps ab = gcj_To_Gps84(arrayList_xunxian_Marker.get(i).getPosition().latitude, arrayList_xunxian_Marker.get(i).getPosition().longitude);
-                        Waypoint mWaypoint = new Waypoint(ab.getWgLat(), ab.getWgLat(), altitude);
-                        //Add Waypoints to Waypoint arraylist;
-                        if (waypointMissionBuilder != null) {
-                            waypointList.add(mWaypoint);
-                            waypointMissionBuilder.waypointList(waypointList).waypointCount(waypointList.size());
-                        } else {
-                            waypointMissionBuilder = new WaypointMission.Builder();
-                            waypointList.add(mWaypoint);
-                            waypointMissionBuilder.waypointList(waypointList).waypointCount(waypointList.size());
-                        }
+            case R.id.spotlight: {
+                if (accessoryAggregation != null&light != null) {
+                    Boolean isSpotlightEnabled = (Boolean) KeyManager.getInstance().getValue(spotlightEnabledKey);
+                    if (isSpotlightEnabled != null) {
+                        light.setEnabled(!isSpotlightEnabled, new CommonCallbacks.CompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if (!isSpotlightEnabled) {
+                                    setResultToToast("照明开启: " + (djiError == null ? "Success!" : djiError.getDescription()));
+                                } else {
+                                    setResultToToast("照明关闭: " + (djiError == null ? "Success!" : djiError.getDescription()));
+                                }
+                            }
+                        });
                     }
                 }
-                is_xunxian_add = !is_xunxian_add;
                 break;
             }
-            case R.id.clear: {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        myMapFragment.map_clear();
-                    }
-
-                });
-                waypointList.clear();
-                waypointMissionBuilder.waypointList(waypointList);
-                updateDroneLocation();
-                break;
-            }
-            case R.id.config:{
-                showSettingDialog();
-                break;
-            }
-            case R.id.upload:{
-                uploadWayPointMission();
-                break;
-            }
-            case R.id.pause:{
-
-                if(WaypointMissionState.EXECUTING ==getWaypointMissionOperator().getCurrentState())
-                    pauseWaypointMission();
-                else if(WaypointMissionState.EXECUTION_PAUSED ==getWaypointMissionOperator().getCurrentState())
-                    resumeWaypointMission();
-                break;
-            }
-            case R.id.start:{
-                startWaypointMission();
-                break;
-            }
-            case R.id.stop:{
-                stopWaypointMission();
-                break;
-            }
-            case R.id.rtmp:{
-                if(liveStreamManager!=null) {
-                    if (liveStreamManager.isStreaming()) {
-                        AlertDialog.Builder normalDialog = new AlertDialog.Builder(CompleteWidgetActivity1.this);
-                        normalDialog.setMessage("停止直播?");
-                        normalDialog.setPositiveButton("确定",
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        liveStreamManager.stopStream();
-                                        rtmp.setText("开始直播！");
-                                    }
-                                });
-                        normalDialog.setNegativeButton("关闭",
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                    }
-                                });
-                        // 显示
-                        normalDialog.show();
-                    }else{
-                        final EditText editText = new EditText(CompleteWidgetActivity1.this);
-                        AlertDialog.Builder inputDialog =new AlertDialog.Builder(CompleteWidgetActivity1.this);
-                        inputDialog.setTitle("请输入直播地址：").setView(editText);
-                        inputDialog.setPositiveButton("确定",
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-//                                        setResultToToast(editText.getText().toString());
-                                        liveStreamManager.setLiveUrl(editText.getText().toString());
-                                        liveStreamManager.startStream();
-                                        rtmp.setText("直播中。。。");
-                                    }
-                                });
-                        inputDialog.setNegativeButton("关闭",
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                    }
-                                }).show();
-                    }
-                }else
-                    setResultToToast("直播不可用！");
-                break;
-            }
-
-            case R.id.spotlight:{
-                if (accessoryAggregation!=null) {
-                    light = accessoryAggregation.getSpotlight();
-                    if (light != null) {
-                        setResultToToast("BUSHI NULL!");
-                        Boolean isSpotlightEnabled = (Boolean) KeyManager.getInstance().getValue(spotlightEnabledKey);
-//                        if (isSpotlightEnabled != null && isSpotlightEnabled) {
-                            light.setEnabled(on_off_light, new CommonCallbacks.CompletionCallback() {
-                                @Override
-                                public void onResult(DJIError djiError) {
-                                    if (on_off_light) {
-                                        setResultToToast("照明开启: " + (djiError == null ? "Success!" : djiError.getDescription()));
-                                        if (djiError == null)
-                                            on_off_light = false;
-                                    } else {
-                                        setResultToToast("照明关闭: " + (djiError == null ? "Success!" : djiError.getDescription()));
-                                        if (djiError == null)
-                                            on_off_light = true;
-                                    }
+            case R.id.beacon: {
+                if (accessoryAggregation != null&beacon_light != null) {
+                    Boolean isBeacoEnabled = (Boolean) KeyManager.getInstance().getValue(beaconEnabledKey);
+                    if (isBeacoEnabled != null) {
+                        beacon_light.setEnabled(!isBeacoEnabled, new CommonCallbacks.CompletionCallback() {
+                            @Override
+                            public void onResult(DJIError djiError) {
+                                if (!isBeacoEnabled) {
+                                    setResultToToast("夜航灯开启: " + (djiError == null ? "Success!" : djiError.getDescription()));
+                                } else {
+                                    setResultToToast("夜航灯关闭: " + (djiError == null ? "Success!" : djiError.getDescription()));
                                 }
-                            });
-//                        }
-                    } else
-                        setResultToToast("tmd NULL!");
-                }else
-                setResultToToast("tmd111 NULL!");
-                break;
-            }
-            case R.id.beacon:{
-                if (accessoryAggregation!=null) {
-                    beacon_light = accessoryAggregation.getBeacon();
-                    if (beacon_light != null) {
-                        setResultToToast("BUSHI NULL!");
-                        Boolean isBeacoEnabled = (Boolean) KeyManager.getInstance().getValue(beaconEnabledKey);
-//                        if (isBeacoEnabled != null && isBeacoEnabled) {
-                            beacon_light.setEnabled(on_off_beacon, new CommonCallbacks.CompletionCallback() {
-                                @Override
-                                public void onResult(DJIError djiError) {
-                                    if (on_off_beacon) {
-                                        setResultToToast("夜航灯开启: " + (djiError == null ? "Success!" : djiError.getDescription()));
-                                        if (djiError == null)
-                                            on_off_beacon = false;
-                                    } else {
-                                        setResultToToast("夜航灯关闭: " + (djiError == null ? "Success!" : djiError.getDescription()));
-                                        if (djiError == null)
-                                            on_off_beacon = true;
-                                    }
-                                }
-                            });
-//                        }
-                    } else
-                        setResultToToast("tmd NULL!");
-                }else
-                    setResultToToast("tmd111 NULL!");
+                            }
+                        });
+                    }
+                }
+
                 break;
             }
 
-            case R.id.speaker_volume:{
+            case R.id.speaker_volume: {
                 showSpeakerVolumeDialog();
                 break;
             }
 
-            case R.id.play_mode:{
+            case R.id.play_mode: {
                 if (speaker != null) {
                     SettingsDefinitions.PlayMode playMode = (SettingsDefinitions.PlayMode) KeyManager.getInstance().getValue(playModeKey);
-                    if (playMode != null && playMode == SettingsDefinitions.PlayMode.REPEAT_SINGLE) {
+                    if (playMode == SettingsDefinitions.PlayMode.REPEAT_SINGLE) {
                         speaker.setPlayMode(SettingsDefinitions.PlayMode.SINGLE_ONCE, new CommonCallbacks.CompletionCallback() {
                             @Override
                             public void onResult(DJIError djiError) {
-                                if(djiError==null){
+                                if (djiError == null) {
                                     runOnUiThread(new Runnable() {
+                                        @SuppressLint("SetTextI18n")
                                         @Override
                                         public void run() {
                                             play_mode.setText("SINGLE_ONCE");
                                         }
                                     });
-                                }else
+                                } else
                                     setResultToToast("play mode change fail!");
                             }
                         });
@@ -546,14 +514,14 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
                         speaker.setPlayMode(SettingsDefinitions.PlayMode.REPEAT_SINGLE, new CommonCallbacks.CompletionCallback() {
                             @Override
                             public void onResult(DJIError djiError) {
-                                if(djiError==null){
+                                if (djiError == null) {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
                                             play_mode.setText("REPEAT_SINGLE");
                                         }
                                     });
-                                }else
+                                } else
                                     setResultToToast("play mode change fail!");
                             }
                         });
@@ -563,7 +531,7 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
                 }
                 break;
             }
-            case R.id.rec_speaker:{
+            case R.id.rec_speaker: {
                 if (speaker != null) {
                     long time = Calendar.getInstance().getTimeInMillis();
                     AudioFileInfo uploadInfo = new AudioFileInfo("" + time,
@@ -578,18 +546,18 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
 
                         @Override
                         public void onProgress(int dataSize) {
-                            setResultToToast("Transmitting:"+"Size:"+dataSize);
+                            setResultToToast("Transmitting:" + "Size:" + dataSize);
                         }
 
                         @Override
                         public void onFinish(int index) {
-                            setResultToToast("Transmit finished!"+index);
-                            last_rec=index;
+                            setResultToToast("Transmit finished!" + index);
+                            last_rec = index;
                         }
 
                         @Override
                         public void onFailure(DJIError error) {
-                            setResultToToast("Transmit failure:"+error.getDescription());
+                            setResultToToast("Transmit failure:" + error.getDescription());
                         }
                     });
 
@@ -608,7 +576,7 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
                     setResultToToast("Speaker disconnected!");
                 }
                 break;
-            case R.id.play_record:{
+            case R.id.play_record: {
                 if (speaker != null) {
                     speaker.play(last_rec, new CommonCallbacks.CompletionCallback() {
                         @Override
@@ -621,7 +589,7 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
                 }
                 break;
             }
-            case R.id.stop_playing:{
+            case R.id.stop_playing: {
                 if (speaker != null) {
                     speaker.stop(new CommonCallbacks.CompletionCallback() {
                         @Override
@@ -716,8 +684,100 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
                 }
                 break;
             }
-            case R.id.nfz:{
-                printSurroundFlyZones();
+            case R.id.locate:{
+//                updateDroneLocation();
+                cameraUpdate(); // Locate the drone's place
+                break;
+            }
+            case R.id.add:{
+                enableDisableAdd();
+                break;
+            }
+            case R.id.clear: {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        for(int i=0;i<line_on_map.size();i++)
+                            line_on_map.get(i).remove();
+                        for(int j=0;j<mark_on_map.size();j++)
+                            mark_on_map.get(j).remove();
+                        line_on_map.clear();
+                        mark_on_map.clear();
+                    }
+
+                });
+                waypointList.clear();
+                waypointMissionBuilder.waypointList(waypointList);
+//                updateDroneLocation();
+                break;
+            }
+            case R.id.config:{
+                showSettingDialog();
+                break;
+            }
+            case R.id.upload:{
+                uploadWayPointMission();
+                break;
+            }
+            case R.id.start:{
+                startWaypointMission();
+                break;
+            }
+            case R.id.stop:{
+                stopWaypointMission();
+                break;
+            }
+            case R.id.pause:{
+                if(pause_resume)
+                    pauseWaypointMission();
+                else
+                    resumeWaypointMission();
+                break;
+            }
+            case R.id.rtmp:{
+                if(liveStreamManager!=null) {
+                    if (liveStreamManager.isStreaming()) {
+                        AlertDialog.Builder normalDialog = new AlertDialog.Builder(CompleteWidgetActivity.this);
+                        normalDialog.setMessage("停止直播?");
+                        normalDialog.setPositiveButton("确定",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        liveStreamManager.stopStream();
+                                        rtmp.setText("开始直播！");
+                                    }
+                                });
+                        normalDialog.setNegativeButton("关闭",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                    }
+                                });
+                        // 显示
+                        normalDialog.show();
+                    }else{
+                        final EditText editText = new EditText(CompleteWidgetActivity.this);
+                        AlertDialog.Builder inputDialog =new AlertDialog.Builder(CompleteWidgetActivity.this);
+                        inputDialog.setTitle("请输入直播地址：").setView(editText);
+                        inputDialog.setPositiveButton("确定",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+//                                        liveStreamManager.setAudioStreamingEnabled(false);
+                                        liveStreamManager.setLiveUrl(editText.getText().toString());
+                                        liveStreamManager.startStream();
+                                        rtmp.setText("直播中。。。");
+                                    }
+                                });
+                        inputDialog.setNegativeButton("关闭",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                    }
+                                }).show();
+                    }
+                }else
+                    setResultToToast("直播不可用！");
                 break;
             }
             default:
@@ -751,16 +811,17 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
         new AlertDialog.Builder(this)
                 .setTitle("")
                 .setView(SpeakerVolumeSettings)
-                .setPositiveButton("Finish",new DialogInterface.OnClickListener(){
+                .setPositiveButton("确定",new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog, int id) {
-                        speaker.setVolume(Integer.valueOf(SpeakerVolumeTV.getText().toString()), new CommonCallbacks.CompletionCallback() {
-                            @Override
-                            public void onResult(DJIError djiError) {
-                                setResultToToast("音量调节: " + (djiError == null ? "Success!" : djiError.getDescription()));
-                            }
-                        });
+                        if (speaker != null) {
+                            speaker.setVolume(Integer.valueOf(SpeakerVolumeTV.getText().toString()), new CommonCallbacks.CompletionCallback() {
+                                @Override
+                                public void onResult(DJIError djiError) {
+                                    setResultToToast("音量调节: " + (djiError == null ? "Success!" : djiError.getDescription()));
+                                }
+                            });
+                        }
                     }
-
                 })
                 .create()
                 .show();
@@ -784,39 +845,6 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
                     audioRecoderHandler.deleteLastRecordFile();
                 }
             });
-        }
-    }
-
-    private class ResizeAnimation extends Animation {
-
-        private View mView;
-        private int mToHeight;
-        private int mFromHeight;
-
-        private int mToWidth;
-        private int mFromWidth;
-        private int mMargin;
-
-        private ResizeAnimation(View v, int fromWidth, int fromHeight, int toWidth, int toHeight, int margin) {
-            mToHeight = toHeight;
-            mToWidth = toWidth;
-            mFromHeight = fromHeight;
-            mFromWidth = fromWidth;
-            mView = v;
-            mMargin = margin;
-            setDuration(300);
-        }
-
-        @Override
-        protected void applyTransformation(float interpolatedTime, Transformation t) {
-            float height = (mToHeight - mFromHeight) * interpolatedTime + mFromHeight;
-            float width = (mToWidth - mFromWidth) * interpolatedTime + mFromWidth;
-            RelativeLayout.LayoutParams p = (RelativeLayout.LayoutParams) mView.getLayoutParams();
-            p.height = (int) height;
-            p.width = (int) width;
-            p.rightMargin = mMargin;
-            p.bottomMargin = mMargin;
-            mView.requestLayout();
         }
     }
 
@@ -856,11 +884,10 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
         if (product != null && product.isConnected()) {
             if (product instanceof Aircraft) {
                 mFlightController = ((Aircraft) product).getFlightController();
-                compass=mFlightController.getCompass();
                 accessoryAggregation=((Aircraft) product).getAccessoryAggregation();
                 liveStreamManager= DJISDKManager.getInstance().getLiveStreamManager();
                 if((product).getCameras().size()>1)
-                camera=((Aircraft) product).getCameras().get(1);
+                    camera=((Aircraft) product).getCameras().get(1);
             }
         }
 
@@ -873,38 +900,23 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
                                                      djiFlightControllerCurrentState) {
                             droneLocationLat = djiFlightControllerCurrentState.getAircraftLocation().getLatitude();
                             droneLocationLng = djiFlightControllerCurrentState.getAircraftLocation().getLongitude();
-                            home_droneLocationLat = djiFlightControllerCurrentState.getHomeLocation().getLatitude();
-                            home_droneLocationLng = djiFlightControllerCurrentState.getHomeLocation().getLongitude();
-                            if (null != compass) {
-                                compass_float = compass.getHeading();
-                            }
-                            updateDroneLocation();
                         }
                     });
 
         }
+
         if(accessoryAggregation!=null){
-           if(accessoryAggregation.getAccessoryAggregationState().isBeaconConnected()) {
-               beacon_light=accessoryAggregation.getBeacon();
-           }else if(accessoryAggregation.getAccessoryAggregationState().isSpeakerConnected()){
-               speaker=accessoryAggregation.getSpeaker();
-           }else if(accessoryAggregation.getAccessoryAggregationState().isSpotlightConnected()){
-               light=accessoryAggregation.getSpotlight();
-           }
+            if(accessoryAggregation.getAccessoryAggregationState().isBeaconConnected()) {
+                beacon_light=accessoryAggregation.getBeacon();
+            }else if(accessoryAggregation.getAccessoryAggregationState().isSpeakerConnected()){
+                speaker=accessoryAggregation.getSpeaker();
+            }else if(accessoryAggregation.getAccessoryAggregationState().isSpotlightConnected()){
+                light=accessoryAggregation.getSpotlight();
+            }
         }
     }
 
-    // Update the drone location based on states from MCU.
-    private void updateDroneLocation(){
-
-        LatLng pos = new LatLng(droneLocationLat, droneLocationLng);
-        LatLng home_pos = new LatLng(home_droneLocationLat, home_droneLocationLng);
-        //Create MarkerOptions object
-        myMapFragment.fly_LatLng(pos,compass_float);
-        myMapFragment.home_LatLng(home_pos);
-    }
-
-    //Add Listener for WaypointMissionOperator
+    //为waypointmission操作符添加侦听器
     private void addListener() {
         if (getWaypointMissionOperator() != null) {
             getWaypointMissionOperator().addListener(eventNotificationListener);
@@ -930,7 +942,7 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
 
         @Override
         public void onExecutionUpdate(WaypointMissionExecutionEvent executionEvent) {
-
+            setResultToToast(executionEvent.getProgress().targetWaypointIndex+"");
         }
 
         @Override
@@ -951,14 +963,41 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
         return instance;
     }
 
+    private void cameraUpdate(){
+        DJILatLng pos = new DJILatLng(droneLocationLat, droneLocationLng);
+        float zoomlevel = (float) 18.0;
+        aMap.moveCamera(new DJICameraUpdateFactory.CameraPositionUpdate(pos,zoomlevel,0,0));
+    }
+
+    private void markWaypoint(DJILatLng point){
+        //创建MarkerOptions对象
+        DJIMarkerOptions markerOptions = new DJIMarkerOptions();
+        markerOptions.position(point);
+        markerOptions.icon(DJIBitmapDescriptorFactory.defaultMarker());
+        markerOptions.anchor(0.5f, 1f);
+        DJIMarker marker = aMap.addMarker(markerOptions);
+        mark_on_map.add(marker);
+        Log.e("LatLng",point.longitude+"--"+point.latitude);
+    }
+
+    private void enableDisableAdd(){
+        if (isAdd == false) {
+            isAdd = true;
+            add.setText("Exit");
+        }else{
+            isAdd = false;
+            add.setText("Add");
+        }
+    }
+
     private void showSettingDialog(){
         LinearLayout wayPointSettings = (LinearLayout)getLayoutInflater().inflate(R.layout.dialog_waypointsetting, null);
 
         final TextView wpAltitude_TV = (TextView) wayPointSettings.findViewById(R.id.altitude);
-        RadioGroup speed_RG = (RadioGroup) wayPointSettings.findViewById(R.id.speed);
         RadioGroup actionAfterFinished_RG = (RadioGroup) wayPointSettings.findViewById(R.id.actionAfterFinished);
         RadioGroup heading_RG = (RadioGroup) wayPointSettings.findViewById(R.id.heading);
 
+        RadioGroup speed_RG = (RadioGroup) wayPointSettings.findViewById(R.id.speed);
         speed_RG.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener(){
 
             @Override
@@ -1021,7 +1060,6 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
                         Log.e(TAG,"speed "+mSpeed);
                         Log.e(TAG, "mFinishedAction "+mFinishedAction);
                         Log.e(TAG, "mHeadingMode "+mHeadingMode);
-
                         configWayPointMission();
                     }
 
@@ -1115,42 +1153,6 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
 
     }
 
-    private void pauseWaypointMission(){
-
-        getWaypointMissionOperator().pauseMission(new CommonCallbacks.CompletionCallback() {
-            @Override
-            public void onResult(DJIError error) {
-                setResultToToast("Mission Pause: " + (error == null ? "Successfully" : error.getDescription()));
-                if(error==null)
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            pause.setText("继续任务");
-                        }
-                    });
-            }
-        });
-
-    }
-
-    private void resumeWaypointMission(){
-
-        getWaypointMissionOperator().resumeMission(new CommonCallbacks.CompletionCallback() {
-            @Override
-            public void onResult(DJIError error) {
-                setResultToToast("Mission Resume: " + (error == null ? "Successfully" : error.getDescription()));
-                if(error==null)
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            pause.setText("暂停任务");
-                        }
-                    });
-            }
-        });
-
-    }
-
     private void stopWaypointMission(){
 
         getWaypointMissionOperator().stopMission(new CommonCallbacks.CompletionCallback() {
@@ -1162,103 +1164,52 @@ public class CompleteWidgetActivity1 extends Activity implements View.OnClickLis
 
     }
 
-    private void setResultToToast(final String string){
-        this.runOnUiThread(new Runnable() {
+    private void pauseWaypointMission(){
+
+        getWaypointMissionOperator().pauseMission(new CommonCallbacks.CompletionCallback() {
             @Override
-            public void run() {
-                Toast.makeText(CompleteWidgetActivity1.this, string, Toast.LENGTH_SHORT).show();
+            public void onResult(DJIError error) {
+                if(error==null) {
+                    setResultToToast("Mission Pause: " + "Successfully");
+                    pause_resume=false;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            pause.setText("Resume");
+                        }
+                    });
+                }else
+                    setResultToToast("Mission Pause: " + error.getDescription());
+            }
+        });
+
+    }
+
+    private void resumeWaypointMission(){
+
+        getWaypointMissionOperator().resumeMission(new CommonCallbacks.CompletionCallback() {
+            @Override
+            public void onResult(DJIError error) {
+                if(error==null) {
+                    setResultToToast("Mission Resume: " + "Successfully");
+                    pause_resume=true;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            pause.setText("Pause");
+                        }
+                    });
+                }else
+                    setResultToToast("Mission Resume: " + error.getDescription());
             }
         });
     }
 
-    private Gps gcj_To_Gps84(double lat, double lon) {
-        Gps gps = transform(lat, lon);
-        double lontitude = lon * 2 - gps.getWgLon();
-        double latitude = lat * 2 - gps.getWgLat();
-        return new Gps(latitude, lontitude);
-    }
-
-    private Gps transform(double lat, double lon) {
-
-        double dLat = transformLat(lon - 105.0, lat - 35.0);
-        double dLon = transformLon(lon - 105.0, lat - 35.0);
-        double radLat = lat / 180.0 * pi_GD;
-        double magic = Math.sin(radLat);
-        magic = 1 - ee * magic * magic;
-        double sqrtMagic = Math.sqrt(magic);
-        dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * pi_GD);
-        dLon = (dLon * 180.0) / (a / sqrtMagic * Math.cos(radLat) * pi_GD);
-        double mgLat = lat + dLat;
-        double mgLon = lon + dLon;
-        return new Gps(mgLat, mgLon);
-    }
-
-    private double transformLat(double x, double y) {
-        double ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y
-                + 0.2 * Math.sqrt(Math.abs(x));
-        ret += (20.0 * Math.sin(6.0 * x * pi_GD) + 20.0 * Math.sin(2.0 * x * pi_GD)) * 2.0 / 3.0;
-        ret += (20.0 * Math.sin(y * pi_GD) + 40.0 * Math.sin(y / 3.0 * pi_GD)) * 2.0 / 3.0;
-        ret += (160.0 * Math.sin(y / 12.0 * pi_GD) + 320 * Math.sin(y * pi_GD / 30.0)) * 2.0 / 3.0;
-        return ret;
-    }
-
-    private double transformLon(double x, double y) {
-        double ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1
-                * Math.sqrt(Math.abs(x));
-        ret += (20.0 * Math.sin(6.0 * x * pi_GD) + 20.0 * Math.sin(2.0 * x * pi_GD)) * 2.0 / 3.0;
-        ret += (20.0 * Math.sin(x * pi_GD) + 40.0 * Math.sin(x / 3.0 * pi_GD)) * 2.0 / 3.0;
-        ret += (150.0 * Math.sin(x / 12.0 * pi_GD) + 300.0 * Math.sin(x / 30.0
-                * pi_GD)) * 2.0 / 3.0;
-        return ret;
-    }
-
-    public class Gps {
-
-        private double wgLat;
-        private double wgLon;
-
-        public Gps(double wgLat, double wgLon) {
-            setWgLat(wgLat);
-            setWgLon(wgLon);
-        }
-
-        public double getWgLat() {
-            BigDecimal b = new BigDecimal(wgLat);
-            wgLat = b.setScale(8, BigDecimal.ROUND_DOWN).doubleValue();
-            return wgLat;
-        }
-
-        public void setWgLat(double wgLat) {
-            this.wgLat = wgLat;
-        }
-
-        public double getWgLon() {
-            BigDecimal b = new BigDecimal(wgLon);
-            wgLon = b.setScale(8, BigDecimal.ROUND_DOWN).doubleValue();
-            return wgLon;
-        }
-
-        public void setWgLon(double wgLon) {
-            this.wgLon = wgLon;
-        }
-
-        @Override
-        public String toString() {
-            return wgLat + "," + wgLon;
-        }
-    }
-
-    private void printSurroundFlyZones() {
-        DJISDKManager.getInstance().getFlyZoneManager().getFlyZonesInSurroundingArea(new CommonCallbacks.CompletionCallbackWith<ArrayList<FlyZoneInformation>>() {
+    private void setResultToToast(final String string){
+        this.runOnUiThread(new Runnable() {
             @Override
-            public void onSuccess(ArrayList<FlyZoneInformation> flyZones) {
-                setResultToToast("get surrounding Fly Zone Success!");
-                myMapFragment.updateFlyZonesOnTheMap(flyZones);
-            }
-
-            @Override
-            public void onFailure(DJIError error) {
-                setResultToToast(error.getDescription());
+            public void run() {
+                Toast.makeText(CompleteWidgetActivity.this, string, Toast.LENGTH_SHORT).show();
             }
         });
     }

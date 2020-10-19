@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.djidemo.MainActivity">
+    tools:context="com.ast.djisdk.MainActivity">
 
     <TextureView
         android:id="@+id/video_previewer_surface"
@@ -18,12 +18,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!--        <TextView-->
-        <!--            android:id="@+id/con_mode"-->
-        <!--            android:layout_width="0dp"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:layout_weight="1"-->
-        <!--            android:text="模式：" />-->
 
         <TextView
             android:id="@+id/distance"
@@ -166,24 +160,10 @@
             android:layout_marginStart="30dp"
             android:layout_marginTop="62dp"
             android:text="通信状态:" />
-<!--        <TextView-->
-<!--            android:id="@+id/time"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_alignParentTop="true"-->
-<!--            android:layout_centerHorizontal="true"-->
-<!--            android:layout_marginStart="30dp"-->
-<!--            android:layout_marginTop="62dp"-->
-<!--            android:text="当前时间:" />-->
+
 
     </LinearLayout>
-<!--    <EditText-->
-<!--        android:id="@+id/edit_live_show_url_input"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginStart="30dp"-->
-<!--        android:layout_marginTop="82dp"-->
-<!--        android:inputType="textUri" />-->
+
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
@@ -199,60 +179,7 @@
             android:layout_weight="1"
             android:text="后退至首页"
             android:textSize="12sp" />
-<!--        <Button-->
-<!--            android:id="@+id/btn_end"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center_vertical"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="任务结束"-->
-<!--            android:textSize="12sp" />-->
 
-<!--        <Button-->
-<!--            android:id="@+id/btn_capture"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center_vertical"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="录像"-->
-<!--            android:textSize="12sp" />-->
-
-<!--        <ToggleButton-->
-<!--            android:id="@+id/btn_record"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center_vertical"-->
-<!--            android:layout_weight="1"-->
-<!--            android:checked="false"-->
-<!--            android:text="Start Record"-->
-<!--            android:textOff="Start Record"-->
-<!--            android:textOn="Stop Record"-->
-<!--            android:textSize="12dp" />-->
-
-<!--        <Button-->
-<!--            android:id="@+id/btn_shoot_photo_mode"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center_vertical"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="摄影模式"-->
-<!--            android:textSize="12sp" />-->
-
-<!--        <Button-->
-<!--            android:id="@+id/btn_record_video_mode"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center_vertical"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="录像模式" />-->
-
-<!--        <Button-->
-<!--            android:id="@+id/btn_download"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center_vertical"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="编辑" />-->
     </LinearLayout>
 
     <TextView

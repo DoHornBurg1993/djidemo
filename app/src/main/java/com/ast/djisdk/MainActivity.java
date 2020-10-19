@@ -1,4 +1,4 @@
-package com.example.djidemo;
+package com.ast.djisdk;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -594,7 +594,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
 //                uav.setDistance(distance);
                 Gson gson = new Gson();
                 String JsonUav = gson.toJson(uav) + "SWOOLEFN";
-                Log.e(TAG, "kkkkkkkk");
                 out.write(JsonUav.getBytes());
                 uav = null;
                 mSocket.close();

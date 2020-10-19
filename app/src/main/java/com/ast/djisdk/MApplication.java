@@ -1,4 +1,4 @@
-package com.example.djidemo;
+package com.ast.djisdk;
 
 import android.app.Application;
 import android.content.Context;

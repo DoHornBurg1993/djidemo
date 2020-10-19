@@ -1,4 +1,4 @@
-package com.example.djidemo;
+package com.ast.djisdk;
 
 /**
  * @author： DuHongBo
@@ -75,29 +75,6 @@ public class Uav {
 
 //    /** 距离,m */
 //    private float distance;
-    //用于URL传参和取参时的key
-
-//    public static String FLYSTATUS = "flyStatus";
-//    public static String TIME = "time";
-//    public static String LON = "lon";
-//    public static String LAT = "lat";
-//    public static String ALT = "alt";
-//    public static String GROUNDALT = "groundAlt";
-//    public static String COURSE = "course";
-//    public static String PITCH = "pitch";
-//    public static String ROLL = "roll";
-//    public static String YAW = "yaw";
-//    public static String TRUEAIRSPEED = "trueAirspeed";
-//    public static String GROUNDSPEED = "groundSpeed";
-//    public static String REMAININGOIL = "remainingOil";
-//    public static String REMAININGDIS = "remainingDis";
-//    public static String REMAININGTIME = "remainingTime";
-//    public static String MOTSTATUS = "motStatus";
-//    public static String NAVSTATUS = "navStatus";
-//    public static String COMSTATUS = "comStatus";
-//    public static String TEMPERATURE = "temperature";
-//    public static String HUMIDITY = "humidity";
-//    public static String WINDSPEED= "windSpeed";
 
 
     public Uav(String action, String key, String uav_no, int fly_status, String time, Double lon, Double lat, Double alt, float ground_alt, float course, Double pitch, Double roll, Double yaw, Double true_airspeed, float ground_speed, int remaining_oil, Double remaining_dis, Double remaining_time, Integer mot_status, Integer nav_status, Integer com_status, Double temperature, Double humidity, Double wind_speed) {

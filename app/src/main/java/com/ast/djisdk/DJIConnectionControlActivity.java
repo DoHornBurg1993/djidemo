@@ -1,4 +1,4 @@
-package com.example.djidemo;
+package com.ast.djisdk;
 
 import android.app.Activity;
 import android.content.Intent;

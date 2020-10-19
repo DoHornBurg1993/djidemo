@@ -1,5 +1,8 @@
-package com.example.djidemo;
+package com.ast.djisdk;
 
+/**
+ * @author： DuHongBo
+ */
 public class BaseRequest {
     /** START：开始任务 END：结束任务 UAVDATA：实时飞行数据 */
     private String action;

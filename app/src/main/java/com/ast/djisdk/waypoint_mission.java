@@ -1,4 +1,4 @@
-package com.example.djidemo;
+package com.ast.djisdk;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -148,7 +148,7 @@ public class waypoint_mission extends Activity implements View.OnClickListener, 
         }
 
         LatLng shenzhen = new LatLng(22.5362, 113.9454);
-        aMap.addMarker(new MarkerOptions().position(shenzhen).title("Marker in Shenzhen"));
+        aMap.addMarker(new MarkerOptions().position(shenzhen).title("Marker in Chengdu"));
         aMap.moveCamera(CameraUpdateFactory.newLatLng(shenzhen));
     }
 
@@ -295,7 +295,7 @@ public class waypoint_mission extends Activity implements View.OnClickListener, 
                 waypointMissionBuilder.waypointList(waypointList).waypointCount(waypointList.size());
             }
         }else{
-            setResultToToast("Cannot Add Waypoint");
+            setResultToToast("不能添加路径");
         }
     }
 

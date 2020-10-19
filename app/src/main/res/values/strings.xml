@@ -1,5 +1,5 @@
 <resources tools:ignore="ExtraTranslation" xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">大疆ast测试</string>
+    <string name="app_name">大疆ast开发</string>
     <string name="action_settings">设置</string>
     <string name="disconnected">断开连接</string>
     <string name="product_information">无</string>
@@ -70,4 +70,16 @@
 
     <string name="mapbox_id">Please enter the map box key here.</string>
     <string name="component_listview_live_stream">现场直播WS</string>
+    <string name="uavNo">无人机编号</string>
+    <string name="exit">退出</string>
+    <string name="importNo">请输入编号</string>
+    <string name="importPort">端口号</string>
+    <string name="importParaIp">请输入传数据ip</string>
+    <string name="flyPara">请输入传数据ip</string>
+    <string name="livingStream">直播流</string>
+    <string name="flyParaTran">飞行数据</string>
+    <string name="title">大疆AST开发</string>
+    <string name="confirmInport">确认输入</string>
+    <string name="importLiveIp">请输入推流ip</string>
+    <string name="openUav">打开无人机画面</string>
 </resources>

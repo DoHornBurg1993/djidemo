@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.djidemo.MediaActivity">
+    tools:context="com.ast.djisdk.MediaActivity">
     <Button
         android:id="@+id/back_btn"
         android:layout_width="60dp"
