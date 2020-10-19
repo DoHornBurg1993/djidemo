@@ -599,10 +599,8 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
                 mSocket.close();
             } catch (Exception e) {
             }
-            mHandler1.postDelayed(this, 10000);
-
+            mHandler1.postDelayed(this, 5000);
         }
-
     };
 
     @Override
