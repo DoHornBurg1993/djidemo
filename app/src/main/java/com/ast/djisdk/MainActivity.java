@@ -228,7 +228,7 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
             }
         });
         thread.start();
-        thread1 = new Thread(new Runnable() {
+        thread1 = new Thread(new Runnable(){
             @Override
             public void run() {
                 showPort = Integer.parseInt(showPort_);
@@ -255,7 +255,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
                         showToast("登录成功");
                         Log.e(TAG, "登录成功");
                     }
-
                     @Override
                     public void onFailure(DJIError error) {
                         showToast("登录失败:"
@@ -271,7 +270,6 @@ public class MainActivity extends Activity implements SurfaceTextureListener, On
         super.onResume();
         initPreviewer();
         onProductChange();
-
         if (mVideoSurface == null) {
             Log.e(TAG, "mVideoSurface为空");
         }
